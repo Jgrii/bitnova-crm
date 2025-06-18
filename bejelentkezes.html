@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bejelentkezés</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            transform: translateY(0);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .login-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 35px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group input:hover {
+            border-color: #667eea;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+            font-size: 1.2rem;
+            user-select: none;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #667eea;
+        }
+
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .forgot-password:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 30px 0;
+            position: relative;
+            color: #666;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e1e5e9;
+            z-index: 1;
+        }
+
+        .divider span {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .social-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .social-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .register-link {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .register-link a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .logo h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Animációk */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-container {
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .form-group {
+            animation: slideIn 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img width="220" height="auto" viewBox="0 0 400 100" src="images/bitnova logo.png">
+            <p>Jelentkezzen be fiókjába</p>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">E-mail cím</label>
+                <input type="email" id="email" name="email" required placeholder="pelda@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Jelszó</label>
+                <input type="password" id="password" name="password" required placeholder="Írja be jelszavát">
+                <span class="password-toggle" onclick="togglePassword()">👁️</span>
+            </div>
+
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" id="remember" name="remember">
+                    <span>Emlékezzen rám</span>
+                </label>
+                <span class="forgot-password" onclick="forgotPassword()">Elfelejtett jelszó?</span>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+                Bejelentkezés
+            </button>
+        </form>
+
+        <div class="register-link">
+            Ha hibába ütközik vegye fel velünk a kapcsolatot: <a><mailto>info@bitnova.hu</mailto></a>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Firebase konfiguráció - CSERÉLD KI A SAJÁT ÉRTÉKEIDDEL!
+          const firebaseConfig = {
+            apiKey: "AIzaSyAXnAo-7BF6iKjNzYr0uoJbhlpCWNaS9s4",
+            authDomain: "bitnova-backend.firebaseapp.com",
+            projectId: "bitnova-backend",
+            storageBucket: "bitnova-backend.firebasestorage.app",
+            messagingSenderId: "312941837204",
+            appId: "1:312941837204:web:f6e3ff0d44cab13f30ed81",
+            measurementId: "G-VBW8LX8LDE"
+          };
+        
+        // Firebase inicializálása
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Bejelentkezés perzisztencia beállítása
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+        // Jelszó mutatása/elrejtése
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleBtn = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleBtn.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleBtn.textContent = '👁️';
+            }
+        }
+
+        // Bejelentkezési form kezelése
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            
+            // Validáció
+            if (!email || !password) {
+                showError('Kérjük, töltse ki az összes mezőt!');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Kérjük, adjon meg érvényes e-mail címet!');
+                return;
+            }
+            
+            performLogin(email, password, remember);
+        });
+
+        // Firebase bejelentkezés
+        async function performLogin(email, password, remember) {
+            const loginBtn = document.getElementById('loginBtn');
+            
+            try {
+                // Gomb letiltása és betöltés jelzése
+                loginBtn.disabled = true;
+                loginBtn.textContent = 'Bejelentkezés...';
+                
+                // Perzisztencia beállítása a "Emlékezzen rám" alapján
+                const persistence = remember ? 
+                    firebase.auth.Auth.Persistence.LOCAL : 
+                    firebase.auth.Auth.Persistence.SESSION;
+                
+                await auth.setPersistence(persistence);
+                
+                // Bejelentkezés Firebase-zel
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                showSuccess('Sikeres bejelentkezés! Átirányítás...');
+                
+                // Átirányítás
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html'; // Cseréld ki a saját útvonalra
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Bejelentkezési hiba:', error);
+                handleAuthError(error);
+                resetLoginButton();
+            }
+        }
+
+        
+
+        // Elfelejtett jelszó
+        async function forgotPassword() {
+            const email = document.getElementById('email').value;
+            
+            if (!email) {
+                showError('Kérjük, adja meg az e-mail címét először!');
+                return;
+            }
+            
+            if (!isValidEmail(email)) {
+                showError('Kérjük, adjon meg érvényes e-mail címet!');
+                return;
+            }
+            
+            try {
+                await auth.sendPasswordResetEmail(email);
+                showSuccess('Jelszó visszaállítási e-mail elküldve! Ellenőrizze postafiókját.');
+            } catch (error) {
+                console.error('Jelszó visszaállítási hiba:', error);
+                handleAuthError(error);
+            }
+        }
+
+
+        // Auth hibák kezelése
+        function handleAuthError(error) {
+            let message = 'Ismeretlen hiba történt.';
+            
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    message = 'Nem található felhasználó ezzel az e-mail címmel.';
+                    break;
+                case 'auth/wrong-password':
+                    message = 'Hibás jelszó.';
+                    break;
+                case 'auth/invalid-email':
+                    message = 'Érvénytelen e-mail cím.';
+                    break;
+                case 'auth/user-disabled':
+                    message = 'Ez a fiók le van tiltva.';
+                    break;
+                case 'auth/too-many-requests':
+                    message = 'Túl sok sikertelen kísérlet. Próbálja újra később.';
+                    break;
+                case 'auth/network-request-failed':
+                    message = 'Hálózati hiba. Ellenőrizze internetkapcsolatát.';
+                    break;
+                case 'auth/popup-closed-by-user':
+                    message = 'Bejelentkezési ablak bezárva.';
+                    break;
+                case 'auth/popup-blocked':
+                    message = 'Popup ablak blokkolva. Engedélyezze a popup-okat.';
+                    break;
+                default:
+                    message = error.message || 'Bejelentkezési hiba történt.';
+            }
+            
+            showError(message);
+        }
+
+        // Hibaüzenet megjelenítése
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // Sikeres üzenet megjelenítése
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // E-mail validáció
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Bejelentkezés gomb visszaállítása
+        function resetLoginButton() {
+            const loginBtn = document.getElementById('loginBtn');
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Bejelentkezés';
+        }
+
+        // Auth állapot figyelése
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Felhasználó be van jelentkezve
+                console.log('Felhasználó bejelentkezve:', user.email);
+                // Itt átirányíthatod a dashboard-ra, ha már be van jelentkezve
+                // window.location.href = '/dashboard.html';
+            } else {
+                // Felhasználó nincs bejelentkezve
+                console.log('Felhasználó nincs bejelentkezve');
+            }
+        });
+
+        // Enter billentyű kezelése
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Bejelentkezés után a bejelentkezes.html-ben:
+        firebase.auth().signInWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            // Sikeres bejelentkezés
+            window.location.href = 'dashboard.html?login=success';
+          })
+          .catch((error) => {
+            // Hibakezelés
+          });
+    </script>
+</body>
+</html>
