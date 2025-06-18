@@ -1161,7 +1161,7 @@
             // Itt implementálhatod a számla részletes megjelenítését
         }
         
-        function changeInvoiceStatus(invoiceId) {
+        async function changeInvoiceStatus(invoiceId) {
             const newStatus = await showSelectModal('Válassza ki az új státuszt:', [
                 {value: 'paid', text: 'Kifizetve'},
                 {value: 'pending', text: 'Függőben'},
@@ -1180,7 +1180,7 @@
         }
         
         // Jegy műveletek
-        function replyToTicket(ticketId) {
+        async function replyToTicket(ticketId) {
             const reply = await showTextareaModal('Írjon választ a jegyre:', 'Válasz szövege...', 'Válasz küldése');
             if (reply) {
                 // Itt implementálhatod a válasz küldését
@@ -1188,7 +1188,7 @@
             }
         }
         
-        function changeTicketStatus(ticketId) {
+        async function changeTicketStatus(ticketId) {
             const newStatus = await showSelectModal('Válassza ki az új státuszt:', [
                 {value: 'open', text: 'Nyitott'},
                 {value: 'in_progress', text: 'Folyamatban'},
