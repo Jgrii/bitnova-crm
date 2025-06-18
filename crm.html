@@ -1187,7 +1187,7 @@
                 // Reply mező frissítése a Firestore-ban
                 await db.collection('tickets').doc(ticketId).update({
                     reply: reply,
-                    status: 'suspended', 
+                    status: 'in_progress', 
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
     
