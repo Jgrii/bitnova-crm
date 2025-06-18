@@ -1157,7 +1157,7 @@
         
         // Számlák műveletek
         function viewInvoice(invoiceId) {
-            alert(`Számla megtekintése: ${invoiceId}`);
+            showNotification(`Számla megtekintése: ${invoiceId}`, 'success');
             // Itt implementálhatod a számla részletes megjelenítését
         }
         
@@ -1221,11 +1221,11 @@
             // Beállítások mentése Firebase-be
             db.collection('system_settings').doc('general').set(settings)
                 .then(() => {
-                    alert('Beállítások mentve!');
+                    showNotification(`Beállítások mentve!`, 'success');
                 })
                 .catch(error => {
                     console.error('Beállítások mentési hiba:', error);
-                    alert('Hiba a beállítások mentésekor!');
+                    showNotification(`Hiba a beállítások mentésekor!`, 'success');
                 });
         });
         
