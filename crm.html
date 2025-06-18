@@ -480,8 +480,10 @@
 
         async function loadAllData() {
             try {
+                await loadAllUsers();
+
+                // Majd a többi adatot
                 await Promise.all([
-                    loadAllUsers(),
                     loadAllInvoices(),
                     loadAllServices(),
                     loadAllTickets(),
