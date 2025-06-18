@@ -743,7 +743,7 @@
         // Rendszer események betöltése
         async function loadSystemEvents() {
             try {
-                const snapshot = await db.collection('system_events')
+                const snapshot = await db.collection('activities')
                     .orderBy('timestamp', 'desc')
                     .limit(10)
                     .get();
