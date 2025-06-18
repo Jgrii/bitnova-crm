@@ -423,6 +423,79 @@
         </div>
     </div>
 
+    <!-- Általános értesítési modal -->
+    <div id="notificationModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title" id="notificationTitle">Értesítés</h3>
+                <button class="custom-modal-close" onclick="closeNotificationModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <div id="notificationIcon"></div>
+                <p id="notificationMessage">Üzenet</p>
+            </div>
+            <div class="custom-modal-footer">
+                <button class="modal-btn modal-btn-primary" onclick="closeNotificationModal()">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Input modal -->
+    <div id="inputModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title" id="inputTitle">Adatok megadása</h3>
+                <button class="custom-modal-close" onclick="closeInputModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <p id="inputMessage">Kérjük adja meg az adatokat:</p>
+                <input type="text" id="inputField" placeholder="Írja be...">
+            </div>
+            <div class="custom-modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeInputModal()">Mégse</button>
+                <button class="modal-btn modal-btn-primary" onclick="confirmInput()">OK</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Textarea modal -->
+    <div id="textareaModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title" id="textareaTitle">Üzenet írása</h3>
+                <button class="custom-modal-close" onclick="closeTextareaModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <p id="textareaMessage">Írja be az üzenetet:</p>
+                <textarea id="textareaField" rows="5" placeholder="Írja be az üzenetet..."></textarea>
+            </div>
+            <div class="custom-modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeTextareaModal()">Mégse</button>
+                <button class="modal-btn modal-btn-primary" onclick="confirmTextarea()">Küldés</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Select modal -->
+    <div id="selectModal" class="custom-modal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h3 class="custom-modal-title" id="selectTitle">Válasszon opciót</h3>
+                <button class="custom-modal-close" onclick="closeSelectModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                <p id="selectMessage">Válassza ki a megfelelő opciót:</p>
+                <select id="selectField">
+                    <option value="">Válasszon...</option>
+                </select>
+            </div>
+            <div class="custom-modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeSelectModal()">Mégse</button>
+                <button class="modal-btn modal-btn-primary" onclick="confirmSelect()">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-firestore-compat.min.js"></script>
@@ -1089,7 +1162,11 @@
         }
         
         function changeInvoiceStatus(invoiceId) {
-            const newStatus = prompt('Új státusz (paid/pending/overdue):');
+            const newStatus = await showSelectModal('Válassza ki az új státuszt:', [
+                {value: 'paid', text: 'Kifizetve'},
+                {value: 'pending', text: 'Függőben'},
+                {value: 'overdue', text: 'Lejárt'}
+            ], 'Számla státusz módosítása');
             if (newStatus && ['paid', 'pending', 'overdue'].includes(newStatus)) {
                 db.collection('invoices').doc(invoiceId).update({
                     status: newStatus
@@ -1104,15 +1181,19 @@
         
         // Jegy műveletek
         function replyToTicket(ticketId) {
-            const reply = prompt('Válasz a jegyre:');
+            const reply = await showTextareaModal('Írjon választ a jegyre:', 'Válasz szövege...', 'Válasz küldése');
             if (reply) {
                 // Itt implementálhatod a válasz küldését
-                alert(`Válasz elküldve a ${ticketId} jegyre`);
+                showNotification('Válasz küldve: ${ticketId}', 'success');
             }
         }
         
         function changeTicketStatus(ticketId) {
-            const newStatus = prompt('Új státusz (open/in_progress/closed):');
+            const newStatus = await showSelectModal('Válassza ki az új státuszt:', [
+                {value: 'open', text: 'Nyitott'},
+                {value: 'in_progress', text: 'Folyamatban'},
+                {value: 'closed', text: 'Lezárt'}
+            ], 'Jegy státusz módosítása');
             if (newStatus && ['open', 'in_progress', 'closed'].includes(newStatus)) {
                 db.collection('tickets').doc(ticketId).update({
                     status: newStatus
@@ -1177,6 +1258,182 @@
                 modal.style.display = "none";
             }
         }
+
+        // Modal kezelő változók
+        let currentModalResolve = null;
+        let currentModalReject = null;
+        
+        // Értesítési modal megjelenítése
+        function showNotification(message, type = 'info', title = 'Értesítés') {
+            const modal = document.getElementById('notificationModal');
+            const titleEl = document.getElementById('notificationTitle');
+            const messageEl = document.getElementById('notificationMessage');
+            const iconEl = document.getElementById('notificationIcon');
+            
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            // Ikon beállítása típus szerint
+            let iconClass = '';
+            switch(type) {
+                case 'success':
+                    iconClass = 'fas fa-check-circle success-icon';
+                    break;
+                case 'error':
+                    iconClass = 'fas fa-exclamation-circle error-icon';
+                    break;
+                case 'warning':
+                    iconClass = 'fas fa-exclamation-triangle warning-icon';
+                    break;
+                default:
+                    iconClass = 'fas fa-info-circle' + (type === 'info' ? ' text-primary' : '');
+            }
+            
+            iconEl.innerHTML = `<i class="${iconClass}"></i>`;
+            modal.style.display = 'block';
+        }
+        
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'none';
+        }
+        
+        // Input modal megjelenítése
+        function showInputModal(message, placeholder = '', title = 'Adatok megadása') {
+            return new Promise((resolve, reject) => {
+                currentModalResolve = resolve;
+                currentModalReject = reject;
+                
+                const modal = document.getElementById('inputModal');
+                const titleEl = document.getElementById('inputTitle');
+                const messageEl = document.getElementById('inputMessage');
+                const inputEl = document.getElementById('inputField');
+                
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                inputEl.placeholder = placeholder;
+                inputEl.value = '';
+                
+                modal.style.display = 'block';
+                inputEl.focus();
+            });
+        }
+        
+        function closeInputModal() {
+            document.getElementById('inputModal').style.display = 'none';
+            if (currentModalReject) {
+                currentModalReject();
+                currentModalReject = null;
+                currentModalResolve = null;
+            }
+        }
+        
+        function confirmInput() {
+            const value = document.getElementById('inputField').value;
+            document.getElementById('inputModal').style.display = 'none';
+            if (currentModalResolve) {
+                currentModalResolve(value);
+                currentModalResolve = null;
+                currentModalReject = null;
+            }
+        }
+        
+        // Textarea modal megjelenítése
+        function showTextareaModal(message, placeholder = '', title = 'Üzenet írása') {
+            return new Promise((resolve, reject) => {
+                currentModalResolve = resolve;
+                currentModalReject = reject;
+                
+                const modal = document.getElementById('textareaModal');
+                const titleEl = document.getElementById('textareaTitle');
+                const messageEl = document.getElementById('textareaMessage');
+                const textareaEl = document.getElementById('textareaField');
+                
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                textareaEl.placeholder = placeholder;
+                textareaEl.value = '';
+                
+                modal.style.display = 'block';
+                textareaEl.focus();
+            });
+        }
+        
+        function closeTextareaModal() {
+            document.getElementById('textareaModal').style.display = 'none';
+            if (currentModalReject) {
+                currentModalReject();
+                currentModalReject = null;
+                currentModalResolve = null;
+            }
+        }
+        
+        function confirmTextarea() {
+            const value = document.getElementById('textareaField').value;
+            document.getElementById('textareaModal').style.display = 'none';
+            if (currentModalResolve) {
+                currentModalResolve(value);
+                currentModalResolve = null;
+                currentModalReject = null;
+            }
+        }
+        
+        // Select modal megjelenítése
+        function showSelectModal(message, options, title = 'Válasszon opciót') {
+            return new Promise((resolve, reject) => {
+                currentModalResolve = resolve;
+                currentModalReject = reject;
+                
+                const modal = document.getElementById('selectModal');
+                const titleEl = document.getElementById('selectTitle');
+                const messageEl = document.getElementById('selectMessage');
+                const selectEl = document.getElementById('selectField');
+                
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                
+                // Opciók feltöltése
+                selectEl.innerHTML = '<option value="">Válasszon...</option>';
+                options.forEach(option => {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = option.value;
+                    optionEl.textContent = option.text;
+                    selectEl.appendChild(optionEl);
+                });
+                
+                modal.style.display = 'block';
+                selectEl.focus();
+            });
+        }
+        
+        function closeSelectModal() {
+            document.getElementById('selectModal').style.display = 'none';
+            if (currentModalReject) {
+                currentModalReject();
+                currentModalReject = null;
+                currentModalResolve = null;
+            }
+        }
+        
+        function confirmSelect() {
+            const value = document.getElementById('selectField').value;
+            document.getElementById('selectModal').style.display = 'none';
+            if (currentModalResolve) {
+                currentModalResolve(value);
+                currentModalResolve = null;
+                currentModalReject = null;
+            }
+        }
+        
+        // Enter lenyomás kezelése
+        document.getElementById('inputField').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') confirmInput();
+        });
+        
+        document.getElementById('textareaField').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) confirmTextarea();
+        });
+
+        
     </script>
 </body>
 </html>
