@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bejelentkezés</title>
+    <title>Bitnova - Dolgozói Bejelentkezés</title>
     <style>
         * {
             margin: 0;
@@ -57,6 +57,18 @@
         .logo p {
             color: #666;
             font-size: 1rem;
+        }
+
+        .employee-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
 
         .form-group {
@@ -171,77 +183,21 @@
             transform: none;
         }
 
-        .divider {
-            text-align: center;
-            margin: 30px 0;
-            position: relative;
-            color: #666;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #e1e5e9;
-            z-index: 1;
-        }
-
-        .divider span {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 0 20px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .social-login {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-
-        .social-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 12px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .social-btn:hover {
-            border-color: #667eea;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .social-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .register-link {
+        .contact-info {
             text-align: center;
             color: #666;
             font-size: 0.9rem;
+            margin-top: 20px;
         }
 
-        .register-link a {
+        .contact-info a {
             color: #667eea;
             text-decoration: none;
             font-weight: 600;
             cursor: pointer;
         }
 
-        .register-link a:hover {
+        .contact-info a:hover {
             color: #764ba2;
             text-decoration: underline;
         }
@@ -254,6 +210,7 @@
             margin-bottom: 20px;
             font-size: 0.9rem;
             display: none;
+            border-left: 4px solid #c33;
         }
 
         .success-message {
@@ -264,6 +221,18 @@
             margin-bottom: 20px;
             font-size: 0.9rem;
             display: none;
+            border-left: 4px solid #3c3;
+        }
+
+        .warning-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+            border-left: 4px solid #ffc107;
         }
 
         @media (max-width: 480px) {
@@ -307,16 +276,21 @@
     <div class="login-container">
         <div class="logo">
             <img width="220" height="auto" viewBox="0 0 400 100" src="images/bitnova logo.png">
-            <p>Jelentkezzen be fiókjába</p>
+            <p>Dolgozói bejelentkezés</p>
+        </div>
+
+        <div class="employee-badge">
+            🔒 Csak Bitnova dolgozók számára
         </div>
 
         <div class="error-message" id="errorMessage"></div>
         <div class="success-message" id="successMessage"></div>
+        <div class="warning-message" id="warningMessage"></div>
 
         <form id="loginForm">
             <div class="form-group">
-                <label for="email">E-mail cím</label>
-                <input type="email" id="email" name="email" required placeholder="pelda@email.com">
+                <label for="email">Céges e-mail cím</label>
+                <input type="email" id="email" name="email" required placeholder="név@bitnova.hu">
             </div>
 
             <div class="form-group">
@@ -338,18 +312,19 @@
             </button>
         </form>
 
-        <div class="register-link">
-            Ha hibába ütközik vegye fel velünk a kapcsolatot: <a><mailto>info@bitnova.hu</mailto></a>
+        <div class="contact-info">
+            Hozzáférési probléma esetén forduljon az IT részleghez.<br>
         </div>
     </div>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Firebase konfiguráció - CSERÉLD KI A SAJÁT ÉRTÉKEIDDEL!
-          const firebaseConfig = {
+        // Firebase konfiguráció
+        const firebaseConfig = {
             apiKey: "AIzaSyAXnAo-7BF6iKjNzYr0uoJbhlpCWNaS9s4",
             authDomain: "bitnova-backend.firebaseapp.com",
             projectId: "bitnova-backend",
@@ -357,14 +332,64 @@
             messagingSenderId: "312941837204",
             appId: "1:312941837204:web:f6e3ff0d44cab13f30ed81",
             measurementId: "G-VBW8LX8LDE"
-          };
+        };
         
         // Firebase inicializálása
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Engedélyezett domain-ek listája
+        const ALLOWED_DOMAINS = [
+            'bitnova.hu'
+        ];
 
         // Bejelentkezés perzisztencia beállítása
         auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+        // E-mail domain ellenőrzése
+        function isAllowedDomain(email) {
+            const domain = email.split('@')[1];
+            return ALLOWED_DOMAINS.includes(domain.toLowerCase());
+        }
+
+        // Felhasználó jogosultságának ellenőrzése Firestore-ban
+        async function checkEmployeeStatus(userId, email) {
+            try {
+                // Ellenőrizzük az 'employees' gyűjteményben
+                const employeeDoc = await db.collection('employees').doc(userId).get();
+                
+                if (employeeDoc.exists) {
+                    const userData = employeeDoc.data();
+                    return {
+                        isEmployee: userData.isActive === true,
+                        role: userData.role || 'employee',
+                        department: userData.department || 'Unknown'
+                    };
+                }
+
+                // Ha nincs dokumentum, ellenőrizzük e-mail alapján
+                const employeeQuery = await db.collection('employees')
+                    .where('email', '==', email.toLowerCase())
+                    .where('isActive', '==', true)
+                    .get();
+
+                if (!employeeQuery.empty) {
+                    const userData = employeeQuery.docs[0].data();
+                    return {
+                        isEmployee: true,
+                        role: userData.role || 'employee',
+                        department: userData.department || 'Unknown'
+                    };
+                }
+
+                return { isEmployee: false };
+            } catch (error) {
+                console.error('Alkalmazotti státusz ellenőrzési hiba:', error);
+                // Fallback: csak domain alapú ellenőrzés
+                return { isEmployee: isAllowedDomain(email) };
+            }
+        }
 
         // Jelszó mutatása/elrejtése
         function togglePassword() {
@@ -384,7 +409,7 @@
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const remember = document.getElementById('remember').checked;
             
@@ -398,6 +423,12 @@
                 showError('Kérjük, adjon meg érvényes e-mail címet!');
                 return;
             }
+
+            // Domain ellenőrzés
+            if (!isAllowedDomain(email)) {
+                showError('Csak Bitnova dolgozók jelentkezhetnek be! Használja céges e-mail címét (@bitnova.hu).');
+                return;
+            }
             
             performLogin(email, password, remember);
         });
@@ -409,7 +440,7 @@
             try {
                 // Gomb letiltása és betöltés jelzése
                 loginBtn.disabled = true;
-                loginBtn.textContent = 'Bejelentkezés...';
+                loginBtn.textContent = 'Ellenőrzés...';
                 
                 // Perzisztencia beállítása a "Emlékezzen rám" alapján
                 const persistence = remember ? 
@@ -422,33 +453,98 @@
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 
-                showSuccess('Sikeres bejelentkezés! Átirányítás...');
+                // E-mail verifikáció ellenőrzése
+                if (!user.emailVerified) {
+                    showWarning('E-mail cím nincs megerősítve. Ellenőrizze postafiókját és kövesse a megerősítési linket.');
+                    
+                    try {
+                        await user.sendEmailVerification();
+                        showWarning('Új megerősítési e-mail elküldve!');
+                    } catch (verifyError) {
+                        console.log('Megerősítési e-mail küldési hiba:', verifyError);
+                    }
+                    
+                    resetLoginButton();
+                    return;
+                }
+
+                // Alkalmazotti státusz ellenőrzése
+                loginBtn.textContent = 'Jogosultság ellenőrzése...';
+                const employeeCheck = await checkEmployeeStatus(user.uid, user.email);
                 
-                // Átirányítás
+                if (!employeeCheck.isEmployee) {
+                    // Kijelentkeztetés, ha nem alkalmazott
+                    await auth.signOut();
+                    showError('Hozzáférés megtagadva. Ön nem szerepel az aktív alkalmazottak listájában. Forduljon az IT részleghez.');
+                    resetLoginButton();
+                    return;
+                }
+
+                // Bejelentkezési log mentése
+                await logLoginAttempt(user.uid, user.email, true, employeeCheck.role);
+                
+                // Sikeres bejelentkezés
+                showSuccess(`Sikeres bejelentkezés! Üdvözöljük! Átirányítás...`);
+                
+                // Átirányítás role alapján
                 setTimeout(() => {
-                    window.location.href = 'dashboard.html'; // Cseréld ki a saját útvonalra
+                    window.location.href = 'crm.html';
                 }, 1500);
                 
             } catch (error) {
                 console.error('Bejelentkezési hiba:', error);
+                await logLoginAttempt(null, email, false, null, error.code);
                 handleAuthError(error);
                 resetLoginButton();
             }
         }
 
-        
+
+        // Bejelentkezési kísérlet logolása
+        async function logLoginAttempt(userId, email, success, role, errorCode = null) {
+            try {
+                await db.collection('login_logs').add({
+                    userId: userId,
+                    email: email,
+                    success: success,
+                    role: role,
+                    errorCode: errorCode,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    ip: await getUserIP(),
+                    userAgent: navigator.userAgent
+                });
+            } catch (error) {
+                console.error('Login log mentési hiba:', error);
+            }
+        }
+
+        // IP cím lekérése (egyszerű implementáció)
+        async function getUserIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                return 'Unknown';
+            }
+        }
 
         // Elfelejtett jelszó
         async function forgotPassword() {
-            const email = document.getElementById('email').value;
+            const email = document.getElementById('email').value.trim();
             
             if (!email) {
-                showError('Kérjük, adja meg az e-mail címét először!');
+                showError('Kérjük, adja meg a céges e-mail címét először!');
                 return;
             }
             
             if (!isValidEmail(email)) {
                 showError('Kérjük, adjon meg érvényes e-mail címet!');
+                return;
+            }
+
+            if (!isAllowedDomain(email)) {
+                showError('Csak Bitnova dolgozók számára elérhető! Használja céges e-mail címét.');
                 return;
             }
             
@@ -461,38 +557,34 @@
             }
         }
 
-
         // Auth hibák kezelése
         function handleAuthError(error) {
             let message = 'Ismeretlen hiba történt.';
             
             switch (error.code) {
                 case 'auth/user-not-found':
-                    message = 'Nem található felhasználó ezzel az e-mail címmel.';
+                    message = 'Nem található felhasználó ezzel az e-mail címmel. Ellenőrizze, hogy céges e-mail címet használ-e!';
                     break;
                 case 'auth/wrong-password':
-                    message = 'Hibás jelszó.';
+                    message = 'Hibás jelszó. Próbálja újra vagy használja az "Elfelejtett jelszó" funkciót.';
                     break;
                 case 'auth/invalid-email':
-                    message = 'Érvénytelen e-mail cím.';
+                    message = 'Érvénytelen e-mail cím. Használja céges e-mail címét (@bitnova.hu).';
                     break;
                 case 'auth/user-disabled':
-                    message = 'Ez a fiók le van tiltva.';
+                    message = 'Ez a fiók le van tiltva. Forduljon az IT részleghez.';
                     break;
                 case 'auth/too-many-requests':
-                    message = 'Túl sok sikertelen kísérlet. Próbálja újra később.';
+                    message = 'Túl sok sikertelen kísérlet. Próbálja újra 15 perc múlva vagy forduljon az IT részleghez.';
                     break;
                 case 'auth/network-request-failed':
                     message = 'Hálózati hiba. Ellenőrizze internetkapcsolatát.';
                     break;
-                case 'auth/popup-closed-by-user':
-                    message = 'Bejelentkezési ablak bezárva.';
-                    break;
-                case 'auth/popup-blocked':
-                    message = 'Popup ablak blokkolva. Engedélyezze a popup-okat.';
+                case 'auth/invalid-credential':
+                    message = 'Érvénytelen bejelentkezési adatok. Ellenőrizze e-mail címét és jelszavát.';
                     break;
                 default:
-                    message = error.message || 'Bejelentkezési hiba történt.';
+                    message = error.message || 'Bejelentkezési hiba történt. Forduljon az IT részleghez.';
             }
             
             showError(message);
@@ -504,6 +596,7 @@
             errorDiv.textContent = message;
             errorDiv.style.display = 'block';
             document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('warningMessage').style.display = 'none';
         }
 
         // Sikeres üzenet megjelenítése
@@ -512,6 +605,16 @@
             successDiv.textContent = message;
             successDiv.style.display = 'block';
             document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('warningMessage').style.display = 'none';
+        }
+
+        // Figyelmeztető üzenet megjelenítése
+        function showWarning(message) {
+            const warningDiv = document.getElementById('warningMessage');
+            warningDiv.textContent = message;
+            warningDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
         }
 
         // E-mail validáció
@@ -528,14 +631,26 @@
         }
 
         // Auth állapot figyelése
-        auth.onAuthStateChanged((user) => {
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Felhasználó be van jelentkezve
                 console.log('Felhasználó bejelentkezve:', user.email);
-                // Itt átirányíthatod a dashboard-ra, ha már be van jelentkezve
-                // window.location.href = '/dashboard.html';
+                
+                // Ellenőrizzük, hogy még mindig jogosult-e
+                const employeeCheck = await checkEmployeeStatus(user.uid, user.email);
+                if (!employeeCheck.isEmployee) {
+                    console.log('Felhasználó elvesztette jogosultságát, kijelentkeztetés...');
+                    await auth.signOut();
+                    showError('Hozzáférése megváltozott. Jelentkezzen be újra.');
+                    return;
+                }
+                
+                // Ha már a bejelentkezési oldalon van, de be van jelentkezve, átirányítás
+                if (window.location.pathname.includes('bejelentkezes.html') || 
+                    window.location.pathname.includes('login.html')) {
+                    const redirectUrl = getRedirectUrl(employeeCheck.role);
+                    window.location.href = redirectUrl;
+                }
             } else {
-                // Felhasználó nincs bejelentkezve
                 console.log('Felhasználó nincs bejelentkezve');
             }
         });
@@ -547,15 +662,20 @@
             }
         });
 
-        // Bejelentkezés után a bejelentkezes.html-ben:
-        firebase.auth().signInWithEmailAndPassword(email, password)
-          .then((userCredential) => {
-            // Sikeres bejelentkezés
-            window.location.href = 'dashboard.html?login=success';
-          })
-          .catch((error) => {
-            // Hibakezelés
-          });
+        // Oldal betöltésekor domain hint megjelenítése
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('email');
+            
+            emailInput.addEventListener('blur', function() {
+                const email = this.value.trim();
+                if (email && !isAllowedDomain(email)) {
+                    showWarning('Csak Bitnova dolgozók jelentkezhetnek be! Használja céges e-mail címét (@bitnova.hu).');
+                }
+            });
+
+            // Auto-focus az email mezőre
+            emailInput.focus();
+        });
     </script>
 </body>
 </html>
