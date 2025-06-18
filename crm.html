@@ -692,7 +692,18 @@
                 for (const doc of snapshot.docs) {
                     const ticket = { id: doc.id, ...doc.data() };
                     
-                    const user = allUsers.find(u => u.id === ticket.userId);
+                    let user = allUsers.find(u => u.id === ticket.userId);
+                    if (!user) {
+                        // Ha nem találjuk a felhasználót a cache-ben, kérjük le közvetlenül
+                        try {
+                            const userDoc = await db.collection('users').doc(ticket.userId).get();
+                            if (userDoc.exists) {
+                                user = { id: userDoc.id, ...userDoc.data() };
+                            }
+                        } catch (error) {
+                            console.error('Felhasználó lekérési hiba:', error);
+                        }
+                    }
                     ticket.userEmail = user?.email || 'Ismeretlen';
                     
                     allTickets.push(ticket);
