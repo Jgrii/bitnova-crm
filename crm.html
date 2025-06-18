@@ -456,14 +456,6 @@
 
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Ellenőrizzük, hogy admin-e a felhasználó
-                const adminDoc = await db.collection('admins').doc(user.uid).get();
-                if (!adminDoc.exists) {
-                    console.log('❌ Nincs admin jogosultság');
-                    alert('Nincs jogosultsága a CRM rendszerhez!');
-                    auth.signOut();
-                    return;
-                }
                 
                 console.log('✅ Admin bejelentkezés:', user.email);
                 document.getElementById('adminEmail').textContent = user.email;
