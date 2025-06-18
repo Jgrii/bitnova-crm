@@ -1184,15 +1184,11 @@
         const reply = await showTextareaModal('Írjon választ a jegyre:', 'Válasz szövege...', 'Válasz küldése');
         if (reply) {
             try {
-                // Válasz hozzáadása a ticket-hez
+                // Reply mező frissítése a Firestore-ban
                 await db.collection('tickets').doc(ticketId).update({
-                    replies: firebase.firestore.FieldValue.arrayUnion({
-                        message: reply,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                        author: 'admin' // vagy az aktuális felhasználó
-                    }),
-                    status: 'replied',
-                    lastReply: firebase.firestore.FieldValue.serverTimestamp()
+                    reply: reply,
+                    status: 'replied', // 'open'-ról 'replied'-re
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
     
                 showNotification(`Válasz küldve: ${ticketId}`, 'success');
