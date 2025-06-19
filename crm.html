@@ -826,7 +826,7 @@
             });
         }
         
-// Rendszer események betöltése - javított verzió
+// Rendszer események betöltése 
 async function loadSystemEvents() {
     try {
         console.log('🔄 Rendszer események betöltése kezdődik...');
@@ -834,7 +834,7 @@ async function loadSystemEvents() {
         // Mivel 'date' mező string, nem tudjuk rendezni időrendben
         // Ezért egyszerű lekérdezést használunk
         const snapshot = await db.collection('activities')
-            .limit(50)  // Több dokumentumot kérünk le
+            .limit(10) 
             .get();
         
         console.log('📊 Lekért dokumentumok száma:', snapshot.size);
