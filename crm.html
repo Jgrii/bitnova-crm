@@ -877,7 +877,7 @@
                         timestamp: {
                             seconds: new Date(data.date).getTime() / 1000
                         },
-                        userEmail: data.userId || 'Ismeretlen felhasználó',
+                        userEmail: data.userEmail || 'Ismeretlen felhasználó',
                         event: data.description || data.type || 'Ismeretlen esemény',
                         status: data.status === 'Nyitott' ? 'warning' : 
                                data.status === 'Lezárt' ? 'success' : 'pending'
@@ -970,7 +970,7 @@
                         timestamp: {
                             seconds: new Date(data.date).getTime() / 1000
                         },
-                        userEmail: data.userId || 'Ismeretlen felhasználó',
+                        userEmail: data.userEmail || 'Ismeretlen felhasználó',
                         event: data.description || data.type || 'Ismeretlen esemény',
                         status: mapStatus(data.status), // Status átalakítás
                         originalData: data // Debug célokra
