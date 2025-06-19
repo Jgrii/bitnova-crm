@@ -39,6 +39,9 @@
                 <a href="#" class="nav-item" onclick="showSection('all-tickets')">
                     <i class="fas fa-headset"></i> Támogatási jegyek
                 </a>
+                <a href="#" class="nav-item" onclick="showSection('activities')">
+                    <i class="fas fa-list-alt"></i> Aktivitások
+                </a>
                 <a href="#" class="nav-item" onclick="showSection('analytics')">
                     <i class="fas fa-chart-bar"></i> Analitika
                 </a>
@@ -287,6 +290,28 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- aktivitások -->
+                <div id="activities" class="section hidden">
+                    <h2 style="margin-bottom: 30px; color: #2c3e50;">Rendszer aktivitások</h2>
+                
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Dátum</th>
+                                    <th>Felhasználó</th>
+                                    <th>Esemény</th>
+                                    <th>Státusz</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allActivitiesTable">
+                                <tr><td colspan="4">Betöltés...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
 
                 <!-- Analitika szekció -->
                 <div id="analytics" class="section hidden">
@@ -561,7 +586,8 @@
                     loadAllServices(),
                     loadAllTickets(),
                     loadSystemEvents(),
-                    loadAnalytics()
+                    loadAnalytics(),
+                    loadAllActivities()
                 ]);
                 
                 updateOverviewStats();
@@ -826,101 +852,148 @@
             });
         }
         
-// Rendszer események betöltése 
-async function loadSystemEvents() {
-    try {
-        console.log('🔄 Rendszer események betöltése kezdődik...');
-        
-        // Mivel 'date' mező string, nem tudjuk rendezni időrendben
-        // Ezért egyszerű lekérdezést használunk
-        const snapshot = await db.collection('activities')
-            .limit(10) 
-            .get();
-        
-        console.log('📊 Lekért dokumentumok száma:', snapshot.size);
-        
-        const events = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            console.log('📄 Dokumentum adatok:', data);
-            
-            // Átalakítjuk a meglévő adatstruktúrát a várt formátumra
-            const event = {
-                id: doc.id,
-                // Date string átalakítása timestamp objektummá a megjelenítéshez
-                timestamp: {
-                    seconds: new Date(data.date).getTime() / 1000
-                },
-                userEmail: data.userId || 'Ismeretlen felhasználó',
-                event: data.description || data.type || 'Ismeretlen esemény',
-                status: data.status === 'Nyitott' ? 'warning' : 
-                       data.status === 'Lezárt' ? 'success' : 'pending'
-            };
-            
-            events.push(event);
-        });
-        
-        // Rendezés dátum szerint (legújabb először)
-        events.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
-        
-        // Csak az első 10-et tartjuk meg
-        const limitedEvents = events.slice(0, 10);
-        
-        displaySystemEvents(limitedEvents);
-        console.log('✅ Rendszer események betöltve:', limitedEvents.length);
-        
-    } catch (error) {
-        console.error('❌ Rendszer események betöltési hiba:', error);
-        
-        // Fallback adatok
-        displaySystemEvents([
-            {
-                timestamp: { seconds: Date.now() / 1000 },
-                userEmail: 'system@bitnova.hu',
-                event: 'Rendszer indítás (fallback)',
-                status: 'success'
+        // Rendszer események betöltése 
+        async function loadSystemEvents() {
+            try {
+                console.log('🔄 Rendszer események betöltése kezdődik...');
+                
+                // Mivel 'date' mező string, nem tudjuk rendezni időrendben
+                // Ezért egyszerű lekérdezést használunk
+                const snapshot = await db.collection('activities')
+                    .limit(10) 
+                    .get();
+                
+                console.log('📊 Lekért dokumentumok száma:', snapshot.size);
+                
+                const events = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    console.log('📄 Dokumentum adatok:', data);
+                    
+                    // Átalakítjuk a meglévő adatstruktúrát a várt formátumra
+                    const event = {
+                        id: doc.id,
+                        // Date string átalakítása timestamp objektummá a megjelenítéshez
+                        timestamp: {
+                            seconds: new Date(data.date).getTime() / 1000
+                        },
+                        userEmail: data.userId || 'Ismeretlen felhasználó',
+                        event: data.description || data.type || 'Ismeretlen esemény',
+                        status: data.status === 'Nyitott' ? 'warning' : 
+                               data.status === 'Lezárt' ? 'success' : 'pending'
+                    };
+                    
+                    events.push(event);
+                });
+                
+                // Rendezés dátum szerint (legújabb először)
+                events.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+                
+                // Csak az első 10-et tartjuk meg
+                const limitedEvents = events.slice(0, 10);
+                
+                displaySystemEvents(limitedEvents);
+                console.log('✅ Rendszer események betöltve:', limitedEvents.length);
+                
+            } catch (error) {
+                console.error('❌ Rendszer események betöltési hiba:', error);
+                
+                // Fallback adatok
+                displaySystemEvents([
+                    {
+                        timestamp: { seconds: Date.now() / 1000 },
+                        userEmail: 'system@bitnova.hu',
+                        event: 'Rendszer indítás (fallback)',
+                        status: 'success'
+                    }
+                ]);
             }
-        ]);
-    }
-}
+        }
+        
+        // Rendszer események megjelenítése
+        function displaySystemEvents(events) {
+            const tableBody = document.getElementById('systemEventsTable');
+            
+            if (!tableBody) {
+                console.error('❌ systemEventsTable elem nem található!');
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            events.forEach(event => {
+                const row = document.createElement('tr');
+                
+                // Status class meghatározása
+                const statusClass = event.status === 'success' ? 'paid' : 
+                                   event.status === 'warning' ? 'pending' : 'overdue';
+                const statusText = event.status === 'success' ? 'Sikeres' : 
+                                  event.status === 'warning' ? 'Figyelmeztetés' : 
+                                  event.status === 'pending' ? 'Folyamatban' : 'Hiba';
+                
+                // Dátum formázása
+                const eventDate = event.timestamp ? 
+                    new Date(event.timestamp.seconds * 1000).toLocaleString('hu-HU') : 'N/A';
+                
+                row.innerHTML = `
+                    <td>${eventDate}</td>
+                    <td>${event.userEmail || 'Rendszer'}</td>
+                    <td>${event.event || 'Ismeretlen esemény'}</td>
+                    <td><span class="status ${statusClass}">${statusText}</span></td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            console.log('📋 Táblázat frissítve', events.length, 'eseménnyel');
+        }
 
-// Rendszer események megjelenítése - javított verzió
-function displaySystemEvents(events) {
-    const tableBody = document.getElementById('systemEventsTable');
-    
-    if (!tableBody) {
-        console.error('❌ systemEventsTable elem nem található!');
-        return;
-    }
-    
-    tableBody.innerHTML = '';
-    
-    events.forEach(event => {
-        const row = document.createElement('tr');
+        //összes aktivitás lekerese
+        async function loadAllActivities() {
+            try {
+                const snapshot = await db.collection('activities').orderBy('timestamp', 'desc').get();
+                const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                displayAllActivities(events);
+            } catch (error) {
+                console.error('Aktivitások betöltési hiba:', error);
+            }
+        }
+
+        //osszes aktivitas betoltese
+        function displayAllActivities(events) {
+            const tableBody = document.getElementById('allActivitiesTable');
+            tableBody.innerHTML = '';
         
-        // Status class meghatározása
-        const statusClass = event.status === 'success' ? 'paid' : 
-                           event.status === 'warning' ? 'pending' : 'overdue';
-        const statusText = event.status === 'success' ? 'Sikeres' : 
-                          event.status === 'warning' ? 'Figyelmeztetés' : 
-                          event.status === 'pending' ? 'Folyamatban' : 'Hiba';
+            if (events.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="4">Nincs aktivitás</td></tr>';
+                return;
+            }
         
-        // Dátum formázása
-        const eventDate = event.timestamp ? 
-            new Date(event.timestamp.seconds * 1000).toLocaleString('hu-HU') : 'N/A';
+            events.forEach(event => {
+                const row = document.createElement('tr');
         
-        row.innerHTML = `
-            <td>${eventDate}</td>
-            <td>${event.userEmail || 'Rendszer'}</td>
-            <td>${event.event || 'Ismeretlen esemény'}</td>
-            <td><span class="status ${statusClass}">${statusText}</span></td>
-        `;
+                const date = event.timestamp ?
+                    new Date(event.timestamp.seconds * 1000).toLocaleString('hu-HU') :
+                    'N/A';
         
-        tableBody.appendChild(row);
-    });
-    
-    console.log('📋 Táblázat frissítve', events.length, 'eseménnyel');
-}
+                const statusClass = event.status === 'success' ? 'paid' :
+                                    event.status === 'warning' ? 'pending' : 'overdue';
+        
+                const statusText = event.status === 'success' ? 'Sikeres' :
+                                   event.status === 'warning' ? 'Figyelmeztetés' : 'Hiba';
+        
+                row.innerHTML = `
+                    <td>${date}</td>
+                    <td>${event.userEmail || 'Rendszer'}</td>
+                    <td>${event.event || 'Ismeretlen'}</td>
+                    <td><span class="status ${statusClass}">${statusText}</span></td>
+                `;
+        
+                tableBody.appendChild(row);
+            });
+        }
+
+
         
         // Analitika betöltése
         async function loadAnalytics() {
@@ -1299,7 +1372,11 @@ function displaySystemEvents(events) {
                 loadAllServices();
                 updateOverviewStats();
             });
-            
+
+            db.collection('activities').onSnapshot(() => {
+                loadAllActivities();
+            });
+       
             console.log('🔄 Valós idejű figyelés beállítva');
         }
         
