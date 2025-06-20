@@ -948,38 +948,52 @@
             console.log('📋 Táblázat frissítve', events.length, 'eseménnyel');
         }
 
-        // Összes aktivitás lekérése - javított verzió
+        // Optimalizált verzió - egy lekérdezéssel az összes felhasználót lekérjük
         async function loadAllActivities() {
             try {
-                console.log('🔄 Összes aktivitás betöltése...');
+                console.log('🔄 Összes aktivitás betöltése (optimalizált)...');
                 
-                // Mivel date mező string, nem tudjuk Firebase-ben rendezni
-                // Ezért minden dokumentumot lekérünk, aztán JS-ben rendezzük
-                const snapshot = await db.collection('activities').get();
+                // Párhuzamosan lekérjük az aktivitásokat és felhasználókat
+                const [activitiesSnapshot, usersSnapshot] = await Promise.all([
+                    db.collection('activities').get(),
+                    db.collection('users').get()
+                ]);
                 
-                console.log('📊 Lekért dokumentumok:', snapshot.size);
+                console.log('📊 Lekért aktivitások:', activitiesSnapshot.size);
+                console.log('👥 Lekért felhasználók:', usersSnapshot.size);
+                
+                // Felhasználók indexelése ID alapján
+                const usersMap = {};
+                usersSnapshot.forEach(doc => {
+                    const userData = doc.data();
+                    usersMap[doc.id] = userData.email || 'Email nem található';
+                });
                 
                 const events = [];
-                snapshot.forEach(doc => {
+                activitiesSnapshot.forEach(doc => {
                     const data = doc.data();
+                    
+                    // Felhasználó email lekérése a map-ből
+                    const userEmail = data.userId ? 
+                        (usersMap[data.userId] || 'Felhasználó nem található') : 
+                        'Rendszer';
                     
                     // Átalakítjuk a formátumot
                     const event = {
                         id: doc.id,
-                        // Date string konvertálása timestamp objektummá
                         timestamp: {
                             seconds: new Date(data.date).getTime() / 1000
                         },
-                        userEmail: data.userId || 'Ismeretlen felhasználó',
+                        userEmail: userEmail,
                         event: data.description || data.type || 'Ismeretlen esemény',
-                        status: mapStatus(data.status), // Status átalakítás
-                        originalData: data // Debug célokra
+                        status: mapStatus(data.status),
+                        originalData: data
                     };
                     
                     events.push(event);
                 });
                 
-                // Rendezés dátum szerint (legújabb először) - JavaScript-ben
+                // Rendezés dátum szerint (legújabb először)
                 events.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
                 
                 console.log('✅ Aktivitások rendezve:', events.length);
@@ -988,7 +1002,6 @@
             } catch (error) {
                 console.error('❌ Aktivitások betöltési hiba:', error);
                 
-                // Hibaüzenet megjelenítése a táblázatban
                 const tableBody = document.getElementById('allActivitiesTable');
                 if (tableBody) {
                     tableBody.innerHTML = `
@@ -1002,7 +1015,7 @@
             }
         }
         
-        // Status átalakító függvény
+        // Status átalakító függvény (változatlan)
         function mapStatus(originalStatus) {
             if (!originalStatus) return 'warning';
             
@@ -1013,7 +1026,7 @@
             } else if (status.includes('lezárt') || status.includes('sikeres') || status.includes('complete')) {
                 return 'success';
             } else {
-                return 'overdue'; // minden más esetben
+                return 'overdue';
             }
         }
         
