@@ -1077,7 +1077,7 @@
                     <td>${event.userEmail || 'Rendszer'}</td>
                     <td>${event.event || 'Ismeretlen esemény'}</td>
                     <td><span class="status ${statusClass}">${statusText}</span></td>
-                    <td><button class="delete-btn" onclick="deleteActivity('${event.id}')" style="background: #ff4757; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 500;">Törlés</button></td>
+                    <td><button class="delete-btn" onclick="deleteActivity('${event.id}')">Törlés</button></td>
                 `;
         
                 tableBody.appendChild(row);
