@@ -548,6 +548,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-firestore-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -1408,25 +1409,47 @@
         
         // Felhasználók exportálása
         function exportUsers() {
-            const csvContent = "data:text/csv;charset=utf-8," 
-                + "Email,Cégnév,Regisztráció,Szolgáltatások,Nyitott jegyek,Havi költség\n"
-                + allUsers.map(user => [
-                    user.email || '',
-                    user.companyName || '',
-                    user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString('hu-HU') : '',
-                    user.stats?.services || 0,
-                    user.stats?.openTickets || 0,
-                    user.stats?.monthlyCost || 0
-                ].join(',')).join('\n');
-            
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "felhasznalok.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+        // Adatok előkészítése Excel formátumhoz
+        const worksheetData = [
+            // Fejléc sor
+            ['Email', 'Cégnév', 'Regisztráció', 'Szolgáltatások', 'Nyitott jegyek', 'Havi költség']
+        ];
+        
+        // Felhasználói adatok hozzáadása
+        allUsers.forEach(user => {
+            worksheetData.push([
+                user.email || '',
+                user.companyName || '',
+                user.createdAt ? new Date(user.createdAt.seconds * 1000).toLocaleDateString('hu-HU') : '',
+                user.stats?.services || 0,
+                user.stats?.openTickets || 0,
+                user.stats?.monthlyCost || 0
+            ]);
+        });
+        
+        // Új munkafüzet létrehozása
+        const workbook = XLSX.utils.book_new();
+        
+        // Munkalap létrehozása az adatokból
+        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+        
+        // Oszlopszélességek beállítása (opcionális)
+        const columnWidths = [
+            { wch: 25 }, // Email
+            { wch: 20 }, // Cégnév
+            { wch: 15 }, // Regisztráció
+            { wch: 15 }, // Szolgáltatások
+            { wch: 15 }, // Nyitott jegyek
+            { wch: 15 }  // Havi költség
+        ];
+        worksheet['!cols'] = columnWidths;
+        
+        // Munkalap hozzáadása a munkafüzethez
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Felhasználók');
+        
+        // Excel fájl letöltése
+        XLSX.writeFile(workbook, 'felhasznalok.xlsx');
+    }
         
         // Számlák műveletek
         function viewInvoice(invoiceId) {
