@@ -424,6 +424,7 @@ body {
     display: flex;
     flex-direction: column;
     max-height: 90vh;
+    overflow: hidden;
 }
 @keyframes modalSlideIn {
     from { transform: translateY(-50px); opacity: 0; }
