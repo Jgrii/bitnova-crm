@@ -460,11 +460,10 @@ body {
     background-color: rgba(255,255,255,0.2);
 }
 .custom-modal-body {
-    padding: 30px;
+    padding: 20px 30px;
+    max-height: calc(90vh - 130px);
     overflow-y: auto;
     flex-grow: 1;
-    max-height: calc(90vh - 130px);
-
 }
 .custom-modal-body p {
     margin: 0 0 20px 0;
