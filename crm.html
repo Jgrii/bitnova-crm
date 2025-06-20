@@ -865,19 +865,25 @@
                 
                 console.log('📊 Lekért dokumentumok száma:', snapshot.size);
                 
+                // Felhasználók lekérése
+                const usersSnapshot = await db.collection('users').get();
+                const usersMap = {};
+                usersSnapshot.forEach(doc => {
+                    const userData = doc.data();
+                    usersMap[doc.id] = userData.email || 'Email nem található';
+                });
+                
                 const events = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     console.log('📄 Dokumentum adatok:', data);
                     
-                    // Átalakítjuk a meglévő adatstruktúrát a várt formátumra
                     const event = {
                         id: doc.id,
-                        // Date string átalakítása timestamp objektummá a megjelenítéshez
                         timestamp: {
                             seconds: data.date.seconds || data.date._seconds || (new Date(data.date).getTime() / 1000)
                         },
-                        userEmail: data.userId || 'Ismeretlen felhasználó',
+                        userEmail: data.userId ? (usersMap[data.userId] || 'Felhasználó nem található') : 'Rendszer',
                         event: data.description || data.type || 'Ismeretlen esemény',
                         status: data.status === 'Nyitott' ? 'warning' : 
                                data.status === 'Lezárt' ? 'success' : 'pending'
