@@ -414,7 +414,7 @@ body {
 }
 .custom-modal-content {
     background-color: #ffffff;
-    margin: 5% auto;
+    margin: 4% auto;
     padding: 0;
     border-radius: 12px;
     width: 90%;
@@ -423,7 +423,7 @@ body {
     animation: modalSlideIn 0.3s ease-out;
     display: flex;
     flex-direction: column;
-    max-height: 95vh;
+    max-height: 93vh;
     overflow: hidden;
 }
 @keyframes modalSlideIn {
@@ -461,7 +461,7 @@ body {
 }
 .custom-modal-body {
     padding: 20px 30px;
-    max-height: calc(95vh - 130px);
+    max-height: calc(93vh - 130px);
     overflow-y: auto;
     flex-grow: 1;
 }
