@@ -412,23 +412,20 @@ body {
     background-color: rgba(0,0,0,0.5);
     backdrop-filter: blur(5px);
 }
-
 .custom-modal-content {
     background-color: #ffffff;
     margin: 10% auto;
     padding: 0;
     border-radius: 12px;
     width: 90%;
-    max-width: 500px;
+    max-width: 700px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
     animation: modalSlideIn 0.3s ease-out;
 }
-
 @keyframes modalSlideIn {
     from { transform: translateY(-50px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
-
 .custom-modal-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -436,13 +433,11 @@ body {
     border-radius: 12px 12px 0 0;
     position: relative;
 }
-
 .custom-modal-title {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
 }
-
 .custom-modal-close {
     position: absolute;
     right: 15px;
@@ -457,23 +452,20 @@ body {
     border-radius: 50%;
     transition: background-color 0.2s;
 }
-
 .custom-modal-close:hover {
     background-color: rgba(255,255,255,0.2);
 }
-
 .custom-modal-body {
     padding: 30px;
-    text-align: center;
+    max-height: 70vh;
+    overflow-y: auto;
 }
-
 .custom-modal-body p {
     margin: 0 0 20px 0;
     color: #555;
     font-size: 16px;
     line-height: 1.5;
 }
-
 .custom-modal-body input, .custom-modal-body textarea, .custom-modal-body select {
     width: 100%;
     padding: 12px;
@@ -482,20 +474,18 @@ body {
     font-size: 14px;
     margin-bottom: 15px;
     transition: border-color 0.3s;
+    box-sizing: border-box;
 }
-
 .custom-modal-body input:focus, .custom-modal-body textarea:focus, .custom-modal-body select:focus {
     outline: none;
     border-color: #667eea;
 }
-
 .custom-modal-footer {
     padding: 20px 30px;
     border-top: 1px solid #eee;
     text-align: right;
     border-radius: 0 0 12px 12px;
 }
-
 .modal-btn {
     padding: 10px 20px;
     border: none;
@@ -506,39 +496,94 @@ body {
     margin-left: 10px;
     transition: all 0.3s;
 }
-
 .modal-btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
 }
-
 .modal-btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
-
 .modal-btn-secondary {
     background: #f8f9fa;
     color: #6c757d;
     border: 1px solid #dee2e6;
 }
-
 .modal-btn-secondary:hover {
     background: #e9ecef;
 }
-
+.autocomplete-container {
+    position: relative;
+}
+.autocomplete-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    border-radius: 0 0 8px 8px;
+}
+.autocomplete-suggestion {
+    padding: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+.autocomplete-suggestion:hover {
+    background-color: #f8f9fa;
+}
+.autocomplete-suggestion.selected {
+    background-color: #667eea;
+    color: white;
+}
+.service-option {
+    margin-bottom: 10px;
+    text-align: left;
+}
+.service-option input[type="radio"] {
+    width: auto;
+    margin-right: 8px;
+    margin-bottom: 0;
+}
+.service-option label {
+    margin-bottom: 0;
+    cursor: pointer;
+}
+#customServiceDiv {
+    display: none;
+}
+.form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+.selected-user-info {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    text-align: left;
+}
 .success-icon {
     color: #28a745;
     font-size: 48px;
     margin-bottom: 15px;
 }
-
 .error-icon {
     color: #dc3545;
     font-size: 48px;
     margin-bottom: 15px;
 }
-
 .warning-icon {
     color: #ffc107;
     font-size: 48px;
