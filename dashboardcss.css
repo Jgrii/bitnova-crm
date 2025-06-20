@@ -461,9 +461,10 @@ body {
 }
 .custom-modal-body {
     padding: 30px;
-    max-height: 70vh;
     overflow-y: auto;
     flex-grow: 1;
+    max-height: calc(90vh - 130px);
+
 }
 .custom-modal-body p {
     margin: 0 0 20px 0;
