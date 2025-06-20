@@ -875,7 +875,7 @@
                         id: doc.id,
                         // Date string átalakítása timestamp objektummá a megjelenítéshez
                         timestamp: {
-                            seconds: new Date(data.date).getTime() / 1000
+                            seconds: data.date.seconds || data.date._seconds || (new Date(data.date).getTime() / 1000)
                         },
                         userEmail: data.userId || 'Ismeretlen felhasználó',
                         event: data.description || data.type || 'Ismeretlen esemény',
@@ -948,7 +948,7 @@
             console.log('📋 Táblázat frissítve', events.length, 'eseménnyel');
         }
 
-        // Optimalizált verzió - egy lekérdezéssel az összes felhasználót lekérjük
+        // osszes aktivitas lekerese
         async function loadAllActivities() {
             try {
                 console.log('🔄 Összes aktivitás betöltése (optimalizált)...');
