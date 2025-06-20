@@ -1077,6 +1077,7 @@
                     <td>${event.userEmail || 'Rendszer'}</td>
                     <td>${event.event || 'Ismeretlen esemény'}</td>
                     <td><span class="status ${statusClass}">${statusText}</span></td>
+                    <td><button class="delete-btn" onclick="deleteActivity('${event.id}')" style="background: #ff4757; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">🗑️ Törlés</button></td>
                 `;
         
                 tableBody.appendChild(row);
@@ -1096,7 +1097,28 @@
             console.log(`📋 Táblázat feltöltve ${events.length} aktivitással`);
         }
 
-        
+        // Aktivitás törlése
+        async function deleteActivity(activityId) {
+            if (!confirm('Biztosan törölni szeretnéd ezt az aktivitást?')) {
+                return;
+            }
+            
+            try {
+                console.log('🗑️ Aktivitás törlése:', activityId);
+                
+                await db.collection('activities').doc(activityId).delete();
+                
+                console.log('✅ Aktivitás törölve');
+                
+                // Táblázat újratöltése
+                loadAllActivities(); // vagy loadAllActivitiesOptimized()
+                
+            } catch (error) {
+                console.error('❌ Törlési hiba:', error);
+                alert('Hiba történt a törlés során: ' + error.message);
+            }
+        }
+       
         // Analitika betöltése
         async function loadAnalytics() {
             try {
