@@ -607,13 +607,3 @@ body {
     transform: translateY(-1px);
 }
 
-/* uj szamla gorgetes miatt */
-#newInvoiceModal {
-    overflow: auto !important;
-}
-
-.modal-content {
-    max-height: 90vh !important;
-    overflow-y: auto !important;
-    margin: 2% auto !important;
-}
