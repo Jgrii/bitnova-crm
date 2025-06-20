@@ -303,7 +303,7 @@ body {
 .modal-content {
     background-color: #fefefe;
     margin: 5% auto;
-    padding: 0;
+    padding: 20;
     border: none;
     border-radius: 8px;
     width: 90%;
