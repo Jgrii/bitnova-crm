@@ -548,12 +548,100 @@
         </div>
     </div>
 
-    
+    <!-- Új számla modal -->
+    <div class="custom-modal" id="newInvoiceModal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5 class="custom-modal-title">Új számla létrehozása</h5>
+                <button type="button" class="custom-modal-close" onclick="closeInvoiceModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                    <form id="newInvoiceForm">
+                    <!-- Felhasználó kiválasztása -->
+                    <div class="form-group">
+                        <label for="userEmail" class="form-label">Felhasználó email címe *</label>
+                        <div class="autocomplete-container">
+                            <input type="email" id="userEmail" 
+                                   placeholder="Kezdje el gépelni az email címet..." required>
+                            <div class="autocomplete-suggestions" id="emailSuggestions"></div>
+                        </div>
+                        <div id="selectedUserInfo" class="selected-user-info" style="display: none;">
+                            <small class="text-muted">Kiválasztott felhasználó:</small>
+                            <div id="selectedUserDetails"></div>
+                        </div>
+                    </div>
+
+                    <!-- Számlaszám (automatikus) -->
+                    <div class="form-group">
+                        <label for="invoiceNumber" class="form-label">Számlaszám</label>
+                        <input type="text" id="invoiceNumber" readonly>
+                    </div>
+
+                    <!-- Összeg -->
+                    <div class="form-group">
+                        <label for="amount" class="form-label">Összeg (Ft) *</label>
+                        <input type="number" id="amount" min="0" required>
+                    </div>
+
+                    <!-- Szolgáltatás típusa -->
+                    <div class="form-group">
+                        <label class="form-label">Szolgáltatás típusa *</label>
+                        <div class="service-option">
+                            <input type="radio" id="hosting" name="serviceType" value="Havi hosting szolgáltatás">
+                            <label for="hosting">Havi hosting szolgáltatás</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="server" name="serviceType" value="Szerver bérlés + domain">
+                            <label for="server">Szerver bérlés + domain</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="additional" name="serviceType" value="Kiegészítő szolgáltatások">
+                            <label for="additional">Kiegészítő szolgáltatások</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="development" name="serviceType" value="Weboldal fejlesztés">
+                            <label for="development">Weboldal fejlesztés</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="custom" name="serviceType" value="custom">
+                            <label for="custom">Egyéb (saját leírás)</label>
+                        </div>
+                    </div>
+
+                    <!-- Egyéni szolgáltatás leírás -->
+                    <div class="form-group" id="customServiceDiv">
+                        <label for="customService" class="form-label">Egyéni szolgáltatás leírása</label>
+                        <input type="text" id="customService" placeholder="Adja meg a szolgáltatás leírását">
+                    </div>
+
+                    <!-- Fizetési határidő -->
+                    <div class="form-group">
+                        <label for="dueDate" class="form-label">Fizetési határidő</label>
+                        <input type="date" id="dueDate">
+                    </div>
+
+                    <!-- Megjegyzés -->
+                    <div class="form-group">
+                        <label for="notes" class="form-label">Megjegyzés</label>
+                        <textarea id="notes" rows="3" placeholder="Opcionális megjegyzés"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="modal-btn modal-btn-secondary" onclick="closeInvoiceModal()">Mégse</button>
+                <button type="button" class="modal-btn modal-btn-primary" onclick="createInvoice()">
+                    <i class="fas fa-save"></i> Számla létrehozása
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-firestore-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -1479,6 +1567,206 @@
                 });
             }
         }
+
+        //uj szamla
+        // Új számla modal megnyitása
+        async function newinvoice() {
+            await loadUsers();
+            await generateInvoiceNumber();
+            setDefaultDueDate();
+            
+            document.getElementById('newInvoiceModal').style.display = 'block';
+        }
+
+        // Modal bezárása
+        function closeInvoiceModal() {
+            document.getElementById('newInvoiceModal').style.display = 'none';
+            resetForm();
+        }
+
+        // Form reset
+        function resetForm() {
+            document.getElementById('newInvoiceForm').reset();
+            selectedUser = null;
+            document.getElementById('selectedUserInfo').style.display = 'none';
+            document.getElementById('selectedUserDetails').innerHTML = '';
+            document.getElementById('emailSuggestions').style.display = 'none';
+            document.getElementById('customServiceDiv').style.display = 'none';
+        }
+
+        // Számlaszám generálása
+        async function generateInvoiceNumber() {
+            try {
+                const invoicesSnapshot = await db.collection('invoices')
+                    .where('invoiceNumber', '>=', `${currentYear}-`)
+                    .where('invoiceNumber', '<', `${currentYear + 1}-`)
+                    .get();
+                
+                const invoiceCount = invoicesSnapshot.size;
+                const nextNumber = String(invoiceCount + 1).padStart(3, '0');
+                const invoiceNumber = `${currentYear}-${nextNumber}`;
+                
+                document.getElementById('invoiceNumber').value = invoiceNumber;
+            } catch (error) {
+                console.error('Hiba a számlaszám generálásakor:', error);
+                // Fallback
+                document.getElementById('invoiceNumber').value = `${currentYear}-001`;
+            }
+        }
+
+        // Alapértelmezett fizetési határidő beállítása (30 nap)
+        function setDefaultDueDate() {
+            const dueDate = new Date();
+            dueDate.setDate(dueDate.getDate() + 30);
+            document.getElementById('dueDate').value = dueDate.toISOString().split('T')[0];
+        }
+
+        // Email autocomplete
+        document.getElementById('userEmail').addEventListener('input', function(e) {
+            const input = e.target.value.toLowerCase();
+            const suggestions = document.getElementById('emailSuggestions');
+            
+            if (input.length < 2) {
+                suggestions.style.display = 'none';
+                return;
+            }
+
+            const matches = allUsers.filter(user => 
+                user.email && user.email.toLowerCase().includes(input)
+            );
+
+            if (matches.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
+
+            suggestions.innerHTML = matches.map(user => 
+                `<div class="autocomplete-suggestion" onclick="selectUser('${user.id}')">
+                    <strong>${user.email}</strong><br>
+                    <small class="text-muted">${user.companyName || 'Nincs cégnév'}</small>
+                </div>`
+            ).join('');
+
+            suggestions.style.display = 'block';
+
+            // Ha csak egy találat van, automatikusan kiválasztjuk
+            if (matches.length === 1) {
+                selectUser(matches[0].id);
+            }
+        });
+
+        // Felhasználó kiválasztása
+        function selectUser(userId) {
+            selectedUser = allUsers.find(user => user.id === userId);
+            if (selectedUser) {
+                document.getElementById('userEmail').value = selectedUser.email;
+                document.getElementById('selectedUserDetails').innerHTML = 
+                    `<strong>${selectedUser.email}</strong> - ${selectedUser.companyName || 'Nincs cégnév'}`;
+                document.getElementById('selectedUserInfo').style.display = 'block';
+                document.getElementById('emailSuggestions').style.display = 'none';
+            }
+        }
+
+        // Szolgáltatás típus változása
+        document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const customDiv = document.getElementById('customServiceDiv');
+                if (this.value === 'custom') {
+                    customDiv.style.display = 'block';
+                    document.getElementById('customService').required = true;
+                } else {
+                    customDiv.style.display = 'none';
+                    document.getElementById('customService').required = false;
+                }
+            });
+        });
+
+        // Számla létrehozása
+        async function createInvoice() {
+            if (!selectedUser) {
+                alert('Kérjük válasszon ki egy felhasználót!');
+                return;
+            }
+
+            const form = document.getElementById('newInvoiceForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const serviceType = document.querySelector('input[name="serviceType"]:checked');
+            if (!serviceType) {
+                alert('Kérjük válasszon szolgáltatás típust!');
+                return;
+            }
+
+            let description = serviceType.value;
+            if (serviceType.value === 'custom') {
+                description = document.getElementById('customService').value;
+                if (!description.trim()) {
+                    alert('Kérjük adja meg az egyéni szolgáltatás leírását!');
+                    return;
+                }
+            }
+
+            const invoiceData = {
+                invoiceNumber: document.getElementById('invoiceNumber').value,
+                userId: selectedUser.id,
+                userEmail: selectedUser.email,
+                companyName: selectedUser.companyName || '',
+                amount: parseInt(document.getElementById('amount').value),
+                description: description,
+                status: 'pending',
+                date: new Date(),
+                dueDate: new Date(document.getElementById('dueDate').value),
+                notes: document.getElementById('notes').value || '',
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+
+            try {
+                await db.collection('invoices').add(invoiceData);
+                
+                // Modal bezárása
+                closeInvoiceModal();
+                
+                // Sikeres üzenet megjelenítése
+                showSuccessMessage('Számla sikeresen létrehozva!');
+                
+                // Ha van táblázat frissítés függvény, hívjuk meg
+                if (typeof loadInvoices === 'function') {
+                    loadInvoices();
+                }
+                
+            } catch (error) {
+                console.error('Hiba a számla létrehozásakor:', error);
+                showErrorMessage('Hiba történt a számla létrehozásakor. Kérjük próbálja újra!');
+            }
+        }
+
+        // Sikeres üzenet megjelenítése
+        function showSuccessMessage(message) {
+            showNotification(`Új számla létrehozva: ${invoiceNumber}`, 'success');
+        }
+
+        // Hiba üzenet megjelenítése
+        function showErrorMessage(message) {
+            showNotification(`Hiba a ${invoiceNumber} számú számla létrehozásánál, próbáld újra`, 'error');
+        }
+
+        // Kattintás a modal-on kívülre
+        // Kattintás kezelése
+        document.addEventListener('click', function(e) {
+            // Modal bezárása kattintásra a háttéren
+            if (e.target.id === 'newInvoiceModal') {
+                closeInvoiceModal();
+            }
+            
+            // Autocomplete elrejtése
+            if (!e.target.closest('.autocomplete-container')) {
+                document.getElementById('emailSuggestions').style.display = 'none';
+            }
+        });
         
         // Jegy műveletek
         async function replyToTicket(ticketId) {
