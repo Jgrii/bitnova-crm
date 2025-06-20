@@ -523,21 +523,21 @@
 
     <!-- Törlés modal -->
     <div id="deleteActivityModal" class="modal" style="display: none;">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header">
-                <h3 id="deleteActivityTitle">Aktivitás törlése</h3>
-                <span class="close" onclick="closeDeleteActivityModal()">&times;</span>
+        <div class="costum-modal-content">
+            <div class="costum-modal-header">
+                <h3 class="custom-modal-title" id="deleteActivityTitle">Aktivitás törlése</h3>
+                <span class="custom-modal-close" onclick="closeDeleteActivityModal()">&times;</span>
             </div>
-            <div class="modal-body" id="deleteActivityContent">
+            <div class="costume-modal-body" id="deleteActivityContent">
                 <p style="text-align: center">Biztosan törölni szeretnéd ezt az aktivitást?</p>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                <div>
                     <strong>Dátum:</strong> <span id="deleteActivityDate"></span><br>
                     <strong>Felhasználó:</strong> <span id="deleteActivityUser"></span><br>
                     <strong>Esemény:</strong> <span id="deleteActivityEvent"></span>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeDeleteActivityModal()">Mégse</button>
+            <div class="costume-modal-footer">
+                <button type="button" class="modal-btn modal-btn-secondary" onclick="closeDeleteActivityModal()">Mégse</button>
                 <button type="button" class="btn btn-delete" id="confirmDeleteBtn">Törlés</button>
             </div>
         </div>
