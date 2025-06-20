@@ -423,7 +423,7 @@ body {
     animation: modalSlideIn 0.3s ease-out;
     display: flex;
     flex-direction: column;
-    max-height: 93vh;
+    max-height: 90vh;
     overflow: hidden;
 }
 @keyframes modalSlideIn {
@@ -461,7 +461,7 @@ body {
 }
 .custom-modal-body {
     padding: 20px 30px;
-    max-height: calc(93vh - 130px);
+    max-height: calc(90vh - 130px);
     overflow-y: auto;
     flex-grow: 1;
 }
