@@ -542,7 +542,19 @@ body {
     margin-bottom: 15px;
 }
 
-.delete-btn:hover {
+.delete-btn {
     background: #ff3742 !important;
-    transform: scale(1.05);
+    color: white !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    background: #cc000b !important;
+    transform: translateY(-1px);
 }
