@@ -982,7 +982,7 @@
                     const event = {
                         id: doc.id,
                         timestamp: {
-                            seconds: new Date(data.date).getTime() / 1000
+                            seconds: data.date.seconds || data.date._seconds || (new Date(data.date).getTime() / 1000)
                         },
                         userEmail: userEmail,
                         event: data.description || data.type || 'Ismeretlen esemény',
