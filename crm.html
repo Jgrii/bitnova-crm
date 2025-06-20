@@ -521,6 +521,28 @@
         </div>
     </div>
 
+    <!-- Törlés modal -->
+    <div id="deleteActivityModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 id="deleteActivityTitle">Aktivitás törlése</h3>
+                <span class="close" onclick="closeDeleteActivityModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="deleteActivityContent">
+                <p>Biztosan törölni szeretnéd ezt az aktivitást?</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                    <strong>Dátum:</strong> <span id="deleteActivityDate"></span><br>
+                    <strong>Felhasználó:</strong> <span id="deleteActivityUser"></span><br>
+                    <strong>Esemény:</strong> <span id="deleteActivityEvent"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteActivityModal()">Mégse</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Törlés</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-app-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-auth-compat.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.15.0/firebase-firestore-compat.min.js"></script>
@@ -1077,7 +1099,7 @@
                     <td>${event.userEmail || 'Rendszer'}</td>
                     <td>${event.event || 'Ismeretlen esemény'}</td>
                     <td><span class="status ${statusClass}">${statusText}</span></td>
-                    <td><button class="btn btn-sm btn-delete" onclick="deleteActivity('${event.id}')">Törlés</button></td>
+                    <td><button class="btn btn-sm btn-delete" onclick="openDeleteActivityModal('${event.id}', '${date}', '${event.userEmail}', '${event.event}')">Törlés</button></td>
                 `;
         
                 tableBody.appendChild(row);
@@ -1098,20 +1120,31 @@
         }
 
         // Aktivitás törlése
-        async function deleteActivity(activityId) {
-            if (!confirm('Biztosan törölni szeretnéd ezt az aktivitást?')) {
-                return;
-            }
+        // Modal megnyitása
+        function openDeleteActivityModal(activityId, date, userEmail, event) {
+            document.getElementById('deleteActivityDate').textContent = date;
+            document.getElementById('deleteActivityUser').textContent = userEmail;
+            document.getElementById('deleteActivityEvent').textContent = event;
             
+            document.getElementById('confirmDeleteBtn').onclick = () => confirmDeleteActivity(activityId);
+            document.getElementById('deleteActivityModal').style.display = 'block';
+        }
+        
+        // Modal bezárása
+        function closeDeleteActivityModal() {
+            document.getElementById('deleteActivityModal').style.display = 'none';
+        }
+        
+        // Törlés megerősítése
+        async function confirmDeleteActivity(activityId) {
             try {
                 console.log('🗑️ Aktivitás törlése:', activityId);
                 
                 await db.collection('activities').doc(activityId).delete();
                 
                 console.log('✅ Aktivitás törölve');
-                
-                // Táblázat újratöltése
-                loadAllActivities(); // vagy loadAllActivitiesOptimized()
+                closeDeleteActivityModal();
+                loadAllActivities(); // Táblázat újratöltése
                 
             } catch (error) {
                 console.error('❌ Törlési hiba:', error);
