@@ -541,3 +541,8 @@ body {
     font-size: 48px;
     margin-bottom: 15px;
 }
+
+.delete-btn:hover {
+    background: #ff3742 !important;
+    transform: scale(1.05);
+}
