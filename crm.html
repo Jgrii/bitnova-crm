@@ -1600,6 +1600,8 @@
             const modal = document.getElementById('newInvoiceModal');
             if (modal) {
                 modal.style.display = 'block';
+                // Body scroll letiltása
+                document.body.style.overflow = 'hidden';
             } else {
                 console.error('newInvoiceModal elem nem található');
             }
@@ -1611,6 +1613,8 @@
             if (modal) {
                 modal.style.display = 'none';
             }
+            // Body scroll visszaállítása
+            document.body.style.overflow = 'auto';
             resetForm();
         }
         
@@ -1884,6 +1888,16 @@
                     const emailSuggestions = document.getElementById('emailSuggestions');
                     if (emailSuggestions) {
                         emailSuggestions.style.display = 'none';
+                    }
+                }
+            });
+        
+            // ESC billentyű lenyomáskor bezárás
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    const modal = document.getElementById('newInvoiceModal');
+                    if (modal && modal.style.display === 'block') {
+                        closeInvoiceModal();
                     }
                 }
             });
