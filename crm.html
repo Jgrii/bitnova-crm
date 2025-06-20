@@ -948,49 +948,133 @@
             console.log('📋 Táblázat frissítve', events.length, 'eseménnyel');
         }
 
-        //összes aktivitás lekerese
+        // Összes aktivitás lekérése - javított verzió
         async function loadAllActivities() {
             try {
-                const snapshot = await db.collection('activities').orderBy('timestamp', 'desc').get();
-                const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('🔄 Összes aktivitás betöltése...');
+                
+                // Mivel date mező string, nem tudjuk Firebase-ben rendezni
+                // Ezért minden dokumentumot lekérünk, aztán JS-ben rendezzük
+                const snapshot = await db.collection('activities').get();
+                
+                console.log('📊 Lekért dokumentumok:', snapshot.size);
+                
+                const events = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    
+                    // Átalakítjuk a formátumot
+                    const event = {
+                        id: doc.id,
+                        // Date string konvertálása timestamp objektummá
+                        timestamp: {
+                            seconds: new Date(data.date).getTime() / 1000
+                        },
+                        userEmail: data.userId || 'Ismeretlen felhasználó',
+                        event: data.description || data.type || 'Ismeretlen esemény',
+                        status: mapStatus(data.status), // Status átalakítás
+                        originalData: data // Debug célokra
+                    };
+                    
+                    events.push(event);
+                });
+                
+                // Rendezés dátum szerint (legújabb először) - JavaScript-ben
+                events.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+                
+                console.log('✅ Aktivitások rendezve:', events.length);
                 displayAllActivities(events);
+                
             } catch (error) {
-                console.error('Aktivitások betöltési hiba:', error);
+                console.error('❌ Aktivitások betöltési hiba:', error);
+                
+                // Hibaüzenet megjelenítése a táblázatban
+                const tableBody = document.getElementById('allActivitiesTable');
+                if (tableBody) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="color: red; text-align: center;">
+                                Hiba az aktivitások betöltése során: ${error.message}
+                            </td>
+                        </tr>
+                    `;
+                }
             }
         }
-
-        //osszes aktivitas betoltese
+        
+        // Status átalakító függvény
+        function mapStatus(originalStatus) {
+            if (!originalStatus) return 'warning';
+            
+            const status = originalStatus.toLowerCase();
+            
+            if (status.includes('nyitott') || status.includes('pending')) {
+                return 'warning';
+            } else if (status.includes('lezárt') || status.includes('sikeres') || status.includes('complete')) {
+                return 'success';
+            } else {
+                return 'overdue'; // minden más esetben
+            }
+        }
+        
+        // Összes aktivitás megjelenítése - javított verzió
         function displayAllActivities(events) {
             const tableBody = document.getElementById('allActivitiesTable');
+            
+            if (!tableBody) {
+                console.error('❌ allActivitiesTable elem nem található!');
+                return;
+            }
+            
             tableBody.innerHTML = '';
         
             if (events.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="4">Nincs aktivitás</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nincs aktivitás az adatbázisban</td></tr>';
                 return;
             }
         
-            events.forEach(event => {
+            events.forEach((event, index) => {
                 const row = document.createElement('tr');
         
+                // Dátum formázása
                 const date = event.timestamp ?
-                    new Date(event.timestamp.seconds * 1000).toLocaleString('hu-HU') :
-                    'N/A';
+                    new Date(event.timestamp.seconds * 1000).toLocaleString('hu-HU', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) : 'N/A';
         
+                // Status osztály és szöveg
                 const statusClass = event.status === 'success' ? 'paid' :
-                                    event.status === 'warning' ? 'pending' : 'overdue';
+                                   event.status === 'warning' ? 'pending' : 'overdue';
         
                 const statusText = event.status === 'success' ? 'Sikeres' :
-                                   event.status === 'warning' ? 'Figyelmeztetés' : 'Hiba';
+                                  event.status === 'warning' ? 'Folyamatban' : 'Probléma';
         
                 row.innerHTML = `
                     <td>${date}</td>
                     <td>${event.userEmail || 'Rendszer'}</td>
-                    <td>${event.event || 'Ismeretlen'}</td>
+                    <td>${event.event || 'Ismeretlen esemény'}</td>
                     <td><span class="status ${statusClass}">${statusText}</span></td>
                 `;
         
                 tableBody.appendChild(row);
+                
+                // Debug info konzolba (első 3 elemre)
+                if (index < 3) {
+                    console.log(`📄 Aktivitás ${index + 1}:`, {
+                        date: date,
+                        user: event.userEmail,
+                        event: event.event,
+                        status: event.status,
+                        original: event.originalData
+                    });
+                }
             });
+            
+            console.log(`📋 Táblázat feltöltve ${events.length} aktivitással`);
         }
 
         
