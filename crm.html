@@ -619,6 +619,21 @@
                         <label for="dueDate" class="form-label">Fizetési határidő</label>
                         <input type="date" id="dueDate">
                     </div>
+                        
+                    <!-- kép feltöltés -->
+                    <div class="form-group">
+                        <label for="invoiceImage" class="form-label">Számla kép feltöltése</label>
+                        <input type="file" id="invoiceImage" accept="image/*" class="form-control">
+                        <small class="text-muted">Opcionális - JPG, PNG, GIF formátumok támogatottak (max 1MB)</small>
+                        
+                        <!-- Kép előnézet -->
+                        <div id="imagePreview" style="display: none; margin-top: 10px;">
+                            <img id="previewImg" style="max-width: 200px; max-height: 200px; border: 1px solid #ddd; border-radius: 4px;">
+                            <button type="button" onclick="removeImage()" style="display: block; margin-top: 5px; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px;">
+                                <i class="fas fa-trash"></i> Kép eltávolítása
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- Megjegyzés -->
                     <div class="form-group">
@@ -650,7 +665,8 @@
             storageBucket: "bitnova-backend.firebasestorage.app",
             messagingSenderId: "312941837204",
             appId: "1:312941837204:web:f6e3ff0d44cab13f30ed81",
-            measurementId: "G-VBW8LX8LDE"
+            measurementId: "G-VBW8LX8LDE",
+            storageBucket: "your-project-id.appspot.com"
         };
 
         try {
@@ -663,6 +679,7 @@
         
         const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage();
         
         let allUsers = [];
         let allInvoices = [];
@@ -1616,6 +1633,18 @@
             // Body scroll visszaállítása
             document.body.style.overflow = 'auto';
             resetForm();
+            
+            // Kép előnézet elrejtése ← ÚJ sorok
+            document.getElementById('imagePreview').style.display = 'none';
+            
+            // Kiválasztott felhasználó törlése (ha van)
+            if (typeof selectedUser !== 'undefined') {
+                selectedUser = null;
+                const userInfo = document.getElementById('selectedUserInfo');
+                if (userInfo) {
+                    userInfo.style.display = 'none';
+                }
+            }
         }
         
         // Form reset
@@ -1774,6 +1803,7 @@
         }
         
         // Számla létrehozása
+        // Módosított számla létrehozás Base64 képpel
         async function createInvoice() {
             if (!selectedUser) {
                 alert('Kérjük válasszon ki egy felhasználót!');
@@ -1813,28 +1843,48 @@
             const amountField = document.getElementById('amount');
             const dueDateField = document.getElementById('dueDate');
             const notesField = document.getElementById('notes');
+            const imageField = document.getElementById('invoiceImage'); // ← ÚJ sor
             
             if (!invoiceNumberField || !amountField || !dueDateField) {
                 console.error('Hiányzó form mezők');
                 return;
             }
         
-            const invoiceData = {
-                invoiceNumber: invoiceNumberField.value,
-                userId: selectedUser.id,
-                userEmail: selectedUser.email,
-                companyName: selectedUser.companyName || '',
-                amount: parseInt(amountField.value),
-                description: description,
-                status: 'pending',
-                date: new Date(),
-                dueDate: new Date(dueDateField.value),
-                notes: notesField ? notesField.value || '' : '',
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
+            // Loading állapot beállítása
+            const createButton = document.querySelector('button[onclick="createInvoice()"]');
+            const originalText = createButton.innerHTML;
+            createButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Létrehozás...';
+            createButton.disabled = true;
         
             try {
+                let imageBase64 = null; // ← ÚJ változó
+                
+                // Kép konvertálása Base64-re ha van ← ÚJ blokk
+                if (imageField && imageField.files[0]) {
+                    try {
+                        imageBase64 = await convertImageToBase64(imageField.files[0]);
+                    } catch (error) {
+                        alert(error.message);
+                        return;
+                    }
+                }
+        
+                const invoiceData = {
+                    invoiceNumber: invoiceNumberField.value,
+                    userId: selectedUser.id,
+                    userEmail: selectedUser.email,
+                    companyName: selectedUser.companyName || '',
+                    amount: parseInt(amountField.value),
+                    description: description,
+                    status: 'pending',
+                    date: new Date(),
+                    dueDate: new Date(dueDateField.value),
+                    notes: notesField ? notesField.value || '' : '',
+                    imageBase64: imageBase64, // ← ÚJ mező
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+        
                 await db.collection('invoices').add(invoiceData);
                 
                 // Modal bezárása
@@ -1852,7 +1902,11 @@
                 
             } catch (error) {
                 console.error('Hiba a számla létrehozásakor:', error);
-                showErrorMessage(invoiceData.invoiceNumber);
+                showErrorMessage(invoiceNumberField.value);
+            } finally {
+                // Loading állapot visszaállítása
+                createButton.innerHTML = originalText;
+                createButton.disabled = false;
             }
         }
         
@@ -1908,8 +1962,71 @@
             initializeEmailAutocomplete();
             initializeServiceTypeListeners();
             initializeEventListeners();
+            const imageInput = document.getElementById('invoiceImage');
+                if (imageInput) {
+                    imageInput.addEventListener('change', handleImagePreview);
+                }
         });
+
+        // 1. Kép előnézet kezelő - add hozzá a többi függvényhez
+function handleImagePreview(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    if (file) {
+        // Fájl méret ellenőrzés (1MB limit)
+        if (file.size > 1024 * 1024) {
+            alert('A kép mérete nem lehet nagyobb 1MB-nál!');
+            event.target.value = '';
+            preview.style.display = 'none';
+            return;
+        }
         
+        // Fájl típus ellenőrzés
+        if (!file.type.startsWith('image/')) {
+            alert('Csak kép fájlokat lehet feltölteni!');
+            event.target.value = '';
+            preview.style.display = 'none';
+            return;
+        }
+        
+        // Előnézet megjelenítése
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+// 2. Kép eltávolítás - add hozzá
+function removeImage() {
+    document.getElementById('invoiceImage').value = '';
+    document.getElementById('imagePreview').style.display = 'none';
+}
+
+// 3. Base64 konvertáló - add hozzá
+function convertImageToBase64(file) {
+    return new Promise((resolve, reject) => {
+        if (file.size > 1024 * 1024) {
+            reject(new Error('A kép mérete nem lehet nagyobb 1MB-nál!'));
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            resolve(e.target.result);
+        };
+        reader.onerror = function(error) {
+            reject(error);
+        };
+        reader.readAsDataURL(file);
+    });
+}
         
         // Jegy műveletek
         async function replyToTicket(ticketId) {
