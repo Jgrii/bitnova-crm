@@ -993,6 +993,7 @@
                 }
                 
                 displayTickets(allTickets);
+                updateOverviewStats();
                 console.log('🎫 Jegyek betöltve:', allTickets.length);
             } catch (error) {
                 console.error('Jegyek betöltési hiba:', error);
@@ -2227,7 +2228,6 @@ function convertImageToBase64(file) {
             // Jegyek változásainak figyelése
             db.collection('tickets').onSnapshot(() => {
                 loadAllTickets();
-                updateOverviewStats();
             });
             
             // Szolgáltatások változásainak figyelése
