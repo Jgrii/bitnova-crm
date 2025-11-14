@@ -921,6 +921,7 @@
                 }
                 
                 displayServices(allServices);
+                updateOverviewStats();
                 console.log('⚙️ Szolgáltatások betöltve:', allServices.length);
             } catch (error) {
                 console.error('Szolgáltatások betöltési hiba:', error);
@@ -1290,14 +1291,28 @@
             document.getElementById('deleteActivityEvent').textContent = event;
             
             document.getElementById('confirmDeleteBtn').onclick = () => confirmDeleteActivity(activityId);
+                // ENTER figyelése itt → OK
+            deleteEnterHandler = (e) => {
+            if (e.key === "Enter") {
+            confirmDeleteActivity(activityId);
+            }
+            };
+            
+            document.addEventListener("keydown", deleteEnterHandler);
+            
             document.getElementById('deleteActivityModal').style.display = 'block';
+
         }
         
         // Modal bezárása
         function closeDeleteActivityModal() {
             document.getElementById('deleteActivityModal').style.display = 'none';
+                // ENTER hallgató eltávolítása
+            if (deleteEnterHandler) {
+            document.removeEventListener("keydown", deleteEnterHandler);
+            deleteEnterHandler = null;
+            }
         }
-        
         // Törlés megerősítése
         async function confirmDeleteActivity(activityId) {
             try {
@@ -2233,7 +2248,6 @@ function convertImageToBase64(file) {
             // Szolgáltatások változásainak figyelése
             db.collection('services').onSnapshot(() => {
                 loadAllServices();
-                updateOverviewStats();
             });
 
             db.collection('activities').onSnapshot(() => {
