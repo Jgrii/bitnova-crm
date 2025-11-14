@@ -1291,15 +1291,6 @@
             document.getElementById('deleteActivityEvent').textContent = event;
             
             document.getElementById('confirmDeleteBtn').onclick = () => confirmDeleteActivity(activityId);
-                // ENTER figyelése itt → OK
-            deleteEnterHandler = (e) => {
-            if (e.key === "Enter") {
-            confirmDeleteActivity(activityId);
-            }
-            };
-            
-            document.addEventListener("keydown", deleteEnterHandler);
-            
             document.getElementById('deleteActivityModal').style.display = 'block';
 
         }
@@ -1307,10 +1298,6 @@
         // Modal bezárása
         function closeDeleteActivityModal() {
             document.getElementById('deleteActivityModal').style.display = 'none';
-                // ENTER hallgató eltávolítása
-            if (deleteEnterHandler) {
-            document.removeEventListener("keydown", deleteEnterHandler);
-            deleteEnterHandler = null;
             }
         }
         // Törlés megerősítése
