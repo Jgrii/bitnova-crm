@@ -549,6 +549,7 @@ body {
 .service-option {
     margin-bottom: 10px;
     text-align: left;
+    display: flex;
 }
 .service-option input[type="radio"] {
     width: auto;
