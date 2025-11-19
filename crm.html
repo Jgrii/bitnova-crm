@@ -219,16 +219,12 @@
 
                 <!-- Szolgáltatások szekció -->
                 <div id="all-services" class="section hidden">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                        <h2 style="color: #2c3e50;">Összes szolgáltatás</h2>
-                    
-                        <div style="display: flex; gap: 10px;">
+                    <h2 style="margin-bottom: 30px; color: #2c3e50;">Összes szolgáltatás</h2>
+                    <div style="display: flex; gap: 10px;">
                             <button class="btn btn-primary" onclick="newservice()">
-                                <i class="fas fa-plus"></i> Új szolgáltatás
+                                <i class="fas fa-plus"></i> Új Szolgáltatás
                             </button>
                         </div>
-                    </div>
-
                     
                     <div class="dashboard-grid" id="allServicesGrid">
                         <div class="card">
@@ -765,7 +761,6 @@
                             <input type="radio" id="custom" name="serviceType" value="custom">
                             <label for="custom">Egyéb (saját leírás)</label>
                         </div>
-                        
                     </div>
 
                     <!-- Egyéni szolgáltatás leírás -->
@@ -2407,14 +2402,13 @@ function convertImageToBase64(file) {
             let name = serviceType.value;
             if (serviceType.value === 'custom') {
                 const customServiceField = document.getElementById('customService');
-                if (customServiceField) {
-                    name = customServiceField.value;
-                    if (!name.trim()) {
-                        alert('Kérjük adja meg az egyéni szolgáltatás nevét!');
-                        return;
-                    }
+                if (customServiceField && customServiceField.value.trim()) {
+                    name = customServiceField.value.trim();
+                } else {
+                    alert('Kérjük adja meg az egyéni szolgáltatás nevét!');
+                    return;
+                }
             }
-            
         
             const descriptionField = document.getElementById('serviceDescription');
             const description = descriptionField ? descriptionField.value : '';
