@@ -1974,6 +1974,26 @@
                 });
             });
         }
+
+                function initializeServiceTypeListenersCreation() {
+            document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const customDiv = document.getElementById('customServiceDivCreation');
+                    const customService = document.getElementById('customServiceName');
+                    console.error("initializeServiceTypeListenersCreation");
+                    
+                    if (customDiv && customService) {
+                        if (this.value === 'custom') {
+                            customDiv.style.display = 'block';
+                            customService.required = true;
+                        } else {
+                            customDiv.style.display = 'none';
+                            customService.required = false;
+                        }
+                    }
+                });
+            });
+        }
         
         // Számla létrehozása
         // Módosított számla létrehozás Base64 képpel
@@ -2140,6 +2160,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeEmailAutocomplete();
             initializeServiceTypeListeners();
+            initializeServiceTypeListenersCreation();
             initializeEventListeners();
             const imageInput = document.getElementById('invoiceImage');
                 if (imageInput) {
@@ -2383,23 +2404,6 @@ function convertImageToBase64(file) {
 
         // szolgáltatás létrehozása:
         async function createService() {
-
-            document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const customDiv = document.getElementById('customServiceDivCreation');
-                    const customService = document.getElementById('customServiceName');
-                    
-                    if (customDiv && customService) {
-                        if (this.value === 'custom') {
-                            customDiv.style.display = 'block';
-                            customService.required = true;
-                        } else {
-                            customDiv.style.display = 'none';
-                            customService.required = false;
-                        }
-                    }
-                });
-            });
             
             if (!selectedUser) {
                 alert('Kérjük válasszon ki egy felhasználót!');
