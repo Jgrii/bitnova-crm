@@ -586,7 +586,7 @@
 
                     <!-- Összeg -->
                     <div class="form-group">
-                        <label for="amount" class="form-label">Összeg (Ft) *</label>
+                        <label for="" class="form-label">Összeg (Ft) *</label>
                         <input type="number" id="amount" min="0" required>
                     </div>
 
@@ -737,7 +737,7 @@
                     <!-- Összeg -->
                     <div class="form-group">
                         <label for="amount" class="form-label">Összeg (Ft)</label>
-                        <input type="number" id="amount" min="0">
+                        <input type="number" id="serviceAmount" min="0">
                     </div>
 
                     <!-- Szolgáltatás típusa -->
@@ -2420,7 +2420,7 @@ function convertImageToBase64(file) {
                 return;
             }
         
-            const amountField = document.getElementById('amount');
+            const amountField = document.getElementById('serviceAmount');
             
             const createButton = document.querySelector('button[onclick="createService()"]');
             const originalText = createButton.innerHTML;
