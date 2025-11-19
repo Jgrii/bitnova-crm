@@ -1741,6 +1741,18 @@
             await loadUsers();
             await generateInvoiceNumber();
             setDefaultDueDate();
+
+             const emailField = document.querySelector('#newInvoiceModal #userEmail');
+            if (emailField) {
+                emailField.value = '';
+            }
+            
+            const userInfo = document.querySelector('#newInvoiceModal #selectedUserInfo');
+            if (userInfo) {
+                userInfo.style.display = 'none';
+            }
+            
+            selectedUser = null;
             
             const modal = document.getElementById('newInvoiceModal');
             if (modal) {
@@ -1877,8 +1889,9 @@
                 return;
             }
         
+            const modalId = modal.id;
             suggestions.innerHTML = matches.map(user => 
-                `<div class="autocomplete-suggestion" onclick="selectUser('${user.id}')">
+                `<div class="autocomplete-suggestion" onclick="selectUserFromSuggestion('${user.id}', '${modalId}')">
                     <strong>${user.email}</strong><br>
                     <small class="text-muted">${user.companyName || 'Nincs cégnév'}</small>
                 </div>`
@@ -1892,31 +1905,42 @@
         }
         
         // Felhasználó kiválasztása
-        function selectUser(userId) {
+        function selectUser(userId, modalId) {
             selectedUser = allUsers.find(user => user.id === userId);
-            if (selectedUser) {
-                const userEmailField = document.getElementById('userEmail');
-                const selectedUserDetails = document.getElementById('selectedUserDetails');
-                const selectedUserInfo = document.getElementById('selectedUserInfo');
-                const emailSuggestions = document.getElementById('emailSuggestions');
-                
-                if (userEmailField) {
-                    userEmailField.value = selectedUser.email;
-                }
-                
-                if (selectedUserDetails) {
-                    selectedUserDetails.innerHTML = 
-                        `<strong>${selectedUser.email}</strong> - ${selectedUser.companyName || 'Nincs cégnév'}`;
-                }
-                
-                if (selectedUserInfo) {
-                    selectedUserInfo.style.display = 'block';
-                }
-                
-                if (emailSuggestions) {
-                    emailSuggestions.style.display = 'none';
-                }
+            if (!selectedUser) return;
+            
+            // Meghatározzuk melyik modalban vagyunk
+            const modal = modalId ? document.getElementById(modalId) : 
+                          document.querySelector('.custom-modal[style*="display: block"]');
+            
+            if (!modal) return;
+            
+            const userEmailField = modal.querySelector('#userEmail');
+            const selectedUserDetails = modal.querySelector('#selectedUserDetails');
+            const selectedUserInfo = modal.querySelector('#selectedUserInfo');
+            const emailSuggestions = modal.querySelector('.autocomplete-suggestions');
+            
+            if (userEmailField) {
+                userEmailField.value = selectedUser.email;
             }
+            
+            if (selectedUserDetails) {
+                selectedUserDetails.innerHTML = 
+                    `<strong>${selectedUser.email}</strong> - ${selectedUser.companyName || 'Nincs cégnév'}`;
+            }
+            
+            if (selectedUserInfo) {
+                selectedUserInfo.style.display = 'block';
+            }
+            
+            if (emailSuggestions) {
+                emailSuggestions.style.display = 'none';
+            }
+        }
+
+        // Wrapper függvény a kattintáshoz
+        function selectUserFromSuggestion(userId, modalId) {
+            selectUser(userId, modalId);
         }
         
         // Szolgáltatás típus event listener inicializálása
@@ -2272,6 +2296,18 @@ function convertImageToBase64(file) {
         async function newservice() {
             await loadUsers();
             setDefaultDueDate();
+
+            const emailField = document.querySelector('#newServiceModal #userEmail');
+            if (emailField) {
+                emailField.value = '';
+            }
+    
+            const userInfo = document.querySelector('#newServiceModal #selectedUserInfo');
+            if (userInfo) {
+                userInfo.style.display = 'none';
+            }
+            
+            selectedUser = null;
             
             const modal = document.getElementById('newServiceModal');
             if (modal) {
