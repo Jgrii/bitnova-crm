@@ -767,8 +767,8 @@
 
                     <!-- Egyéni szolgáltatás leírás -->
                     <div class="form-group" id="customServiceDiv">
-                        <label for="customService" class="form-label">Egyéni szolgáltatás leírása</label>
-                        <input type="text" id="customService" placeholder="Adja meg a szolgáltatás leírását">
+                        <label for="customServiceName" class="form-label">Egyéni szolgáltatás leírása</label>
+                        <input type="text" id="customServiceName" placeholder="Adja meg a szolgáltatás leírását">
                     </div>
 
                     <div class="form-group">
@@ -777,8 +777,8 @@
                         <small class="text-muted">Ez a leírás fog megjelenni a szolgáltatás kártyán</small>
                     </div>
                     <div class="form-group" id="customServiceDiv" style="display: none;">
-                        <label for="customService" class="form-label">Egyéni szolgáltatás neve</label>
-                        <input type="text" id="customService" placeholder="Adja meg a szolgáltatás nevét">
+                        <label for="customServiceName" class="form-label">Egyéni szolgáltatás neve</label>
+                        <input type="text" id="customServiceName" placeholder="Adja meg a szolgáltatás nevét">
                     </div> 
                 </form>
             </div>
@@ -2399,12 +2399,13 @@ function convertImageToBase64(file) {
                 alert('Kérjük válasszon szolgáltatás típust!');
                 return;
             }
+            initializeServiceTypeListeners()
         
             // Név meghatározása
             let name = serviceType.value;
             if (serviceType.value === 'custom') {
-                const customServiceField = document.getElementById('customService');
-                console.log(document.getElementById('customService'));
+                const customServiceField = document.getElementById('customServiceName');
+                console.log(document.getElementById('customServiceName'));
                 if (customServiceField && customServiceField.value.trim()) {
                     name = customServiceField.value.trim();
                 } else {
