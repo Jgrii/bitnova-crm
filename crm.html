@@ -220,6 +220,11 @@
                 <!-- Szolgáltatások szekció -->
                 <div id="all-services" class="section hidden">
                     <h2 style="margin-bottom: 30px; color: #2c3e50;">Összes szolgáltatás</h2>
+                    <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-primary" onclick="newservice()">
+                                <i class="fas fa-plus"></i> Új Szolgáltatás
+                            </button>
+                        </div>
                     
                     <div class="dashboard-grid" id="allServicesGrid">
                         <div class="card">
@@ -700,6 +705,77 @@
                 <button type="button" class="btn btn-secondary" onclick="closeViewInvoiceModal()">
                     <i class="fas fa-times"></i> Bezárás
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Új szolgáltatás létrehozása modal-->
+    <div class="custom-modal" id="newServiceModal">
+        <div class="custom-modal-content">
+            <div class="custom-modal-header">
+                <h5 class="custom-modal-title">Új szolgáltatás létrehozása</h5>
+                <button type="button" class="custom-modal-close" onclick="closeServiceModal()">&times;</button>
+            </div>
+            <div class="custom-modal-body">
+                    <form id="newServiceForm">
+                    <!-- Felhasználó kiválasztása -->
+                    <div class="form-group">
+                        <label for="userEmail" class="form-label">Felhasználó email címe *</label>
+                        <div class="autocomplete-container">
+                            <input type="email" id="userEmail" 
+                                   placeholder="Kezdje el gépelni az email címet..." required>
+                            <div class="autocomplete-suggestions" id="emailSuggestions"></div>
+                        </div>
+                        <div id="selectedUserInfo" class="selected-user-info" style="display: none;">
+                            <small class="text-muted">Kiválasztott felhasználó:</small>
+                            <div id="selectedUserDetails"></div>
+                        </div>
+                    </div>
+
+                    <!-- Összeg -->
+                    <div class="form-group">
+                        <label for="amount" class="form-label">Összeg (Ft)</label>
+                        <input type="number" id="amount" min="0">
+                    </div>
+
+                    <!-- Szolgáltatás típusa -->
+                    <div class="form-group">
+                        <label class="form-label">Szolgáltatás típusa *</label>
+                        <div class="service-option">
+                            <input type="radio" id="hosting" name="serviceType" value="Havi hosting szolgáltatás">
+                            <label for="hosting">Szerver Hosting</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="server" name="serviceType" value="Szerver bérlés + domain">
+                            <label for="server">Weboldal üzemeltetés</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="additional" name="serviceType" value="Kiegészítő szolgáltatások">
+                            <label for="additional">Domain kezelés</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="development" name="serviceType" value="Weboldal fejlesztés">
+                            <label for="development">Biztonsági Mentés</label>
+                        </div>
+                        <div class="service-option">
+                            <input type="radio" id="custom" name="serviceType" value="custom">
+                            <label for="custom">Egyéb (saját leírás)</label>
+                        </div>
+                    </div>
+
+                    <!-- Egyéni szolgáltatás leírás -->
+                    <div class="form-group" id="customServiceDiv">
+                        <label for="customService" class="form-label">Egyéni szolgáltatás leírása</label>
+                        <input type="text" id="customService" placeholder="Adja meg a szolgáltatás leírását">
+                    </div>
+                </form>
+            </div>
+            <div class="custom-modal-footer">
+                <button type="button" class="modal-btn modal-btn-secondary" onclick="closeServiceModal()">Mégse</button>
+                <button type="button" class="modal-btn modal-btn-primary" onclick="createService()">
+                    <i class="fas fa-save"></i> Szolgáltatás létrehozása
+                </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1676,7 +1752,7 @@
             }
         }
         
-        // Modal bezárása
+        // számla Modal bezárása
         function closeInvoiceModal() {
             const modal = document.getElementById('newInvoiceModal');
             if (modal) {
@@ -1762,6 +1838,71 @@
             const dueDateField = document.getElementById('dueDate');
             if (dueDateField) {
                 dueDateField.value = dueDate.toISOString().split('T')[0];
+            }
+        }
+
+        // Új sszolgáltatás modal megnyitása
+        async function newservice() {
+            await loadUsers();
+            setDefaultDueDate();
+            
+            const modal = document.getElementById('newServiceModal');
+            if (modal) {
+                modal.style.display = 'block';
+                // Body scroll letiltása
+                document.body.style.overflow = 'hidden';
+            } else {
+                console.error('newServiceModal elem nem található');
+            }
+        }
+        
+        // szolgáltatás Modal bezárása
+        function closeInvoiceModal() {
+            const modal = document.getElementById('newServiceModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            // Body scroll visszaállítása
+            document.body.style.overflow = 'auto';
+            resetForm();
+            
+            // Kiválasztott felhasználó törlése (ha van)
+            if (typeof selectedUser !== 'undefined') {
+                selectedUser = null;
+                const userInfo = document.getElementById('selectedUserInfo');
+                if (userInfo) {
+                    userInfo.style.display = 'none';
+                }
+            }
+        }
+        
+        // Form reset
+        function resetForm() {
+            const form = document.getElementById('newServiceForm');
+            if (form) {
+                form.reset();
+            }
+            
+            selectedUser = null;
+            
+            const selectedUserInfo = document.getElementById('selectedUserInfo');
+            if (selectedUserInfo) {
+                selectedUserInfo.style.display = 'none';
+            }
+            
+            const selectedUserDetails = document.getElementById('selectedUserDetails');
+            if (selectedUserDetails) {
+                selectedUserDetails.innerHTML = '';
+            }
+            
+            const emailSuggestions = document.getElementById('emailSuggestions');
+            if (emailSuggestions) {
+                emailSuggestions.style.display = 'none';
+            }
+            
+            const customServiceDiv = document.getElementById('customServiceDiv');
+            if (customServiceDiv) {
+                customServiceDiv.style.display = 'none';
             }
         }
         
