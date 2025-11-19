@@ -1841,172 +1841,53 @@
             }
         }
 
-        // Új sszolgáltatás modal megnyitása
-        async function newservice() {
-            await loadUsers();
-            setDefaultDueDate();
-            
-            const modal = document.getElementById('newServiceModal');
-            if (modal) {
-                modal.style.display = 'block';
-                // Body scroll letiltása
-                document.body.style.overflow = 'hidden';
-            } else {
-                console.error('newServiceModal elem nem található');
-            }
-        }
-        
-        // szolgáltatás Modal bezárása
-        function closeServiceModal() {
-            const modal = document.getElementById('newServiceModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-            document.body.style.overflow = 'auto';
-            resetServiceForm();
-            
-            selectedUser = null;
-            const userInfo = document.getElementById('selectedUserInfo');
-            if (userInfo) {
-                userInfo.style.display = 'none';
-            }
-        }
-        
-        function resetServiceForm() {
-            const form = document.getElementById('newServiceForm');
-            if (form) {
-                form.reset();
-            }
-            
-            selectedUser = null;
-            
-            const selectedUserInfo = document.getElementById('selectedUserInfo');
-            if (selectedUserInfo) {
-                selectedUserInfo.style.display = 'none';
-            }
-            
-            const selectedUserDetails = document.getElementById('selectedUserDetails');
-            if (selectedUserDetails) {
-                selectedUserDetails.innerHTML = '';
-            }
-            
-            const emailSuggestions = document.getElementById('emailSuggestions');
-            if (emailSuggestions) {
-                emailSuggestions.style.display = 'none';
-            }
-            
-            const customServiceDiv = document.getElementById('customServiceDiv');
-            if (customServiceDiv) {
-                customServiceDiv.style.display = 'none';
-            }
-        }
-
-        // szolgáltatás létrehozása:
-        async function createService() {
-            if (!selectedUser) {
-                alert('Kérjük válasszon ki egy felhasználót!');
-                return;
-            }
-        
-            const form = document.getElementById('newServiceForm');
-            if (!form || !form.checkValidity()) {
-                form?.reportValidity();
-                return;
-            }
-            
-            const serviceType = document.querySelector('input[name="serviceType"]:checked');
-            if (!serviceType) {
-                alert('Kérjük válasszon szolgáltatás típust!');
-                return;
-            }
-        
-            let name = serviceType.value;
-            if (serviceType.value === 'custom') {
-                const customServiceField = document.getElementById('customService');
-                if (customServiceField) {
-                    name = customServiceField.value;
-                    if (!name.trim()) {
-                        alert('Kérjük adja meg az egyéni szolgáltatás leírását!');
-                        return;
-                    }
-                }
-            }
-        
-            const amountField = document.getElementById('amount');
-            
-            const createButton = document.querySelector('button[onclick="createService()"]');
-            const originalText = createButton.innerHTML;
-            createButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Létrehozás...';
-            createButton.disabled = true;
-        
-            try {
-                const serviceData = {
-                    userId: selectedUser.id,
-                    userEmail: selectedUser.email,
-                    name: name,
-                    description: name,
-                    status: 'active',
-                    monthlyPrice: amountField ? parseInt(amountField.value) : 0,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                };
-        
-                await db.collection('services').add(serviceData);
-                
-                closeServiceModal();
-                showNotification('Új szolgáltatás létrehozva!', 'success');
-                
-                if (typeof loadAllServices === 'function') {
-                    loadAllServices();
-                }
-                
-            } catch (error) {
-                console.error('Hiba a szolgáltatás létrehozásakor:', error);
-                showNotification('Hiba történt a szolgáltatás létrehozásakor', 'error');
-            } finally {
-                createButton.innerHTML = originalText;
-                createButton.disabled = false;
-            }
-        }
-        
         // Email autocomplete event listener hozzáadása
         function initializeEmailAutocomplete() {
-            const userEmailField = document.getElementById('userEmail');
-            if (userEmailField) {
-                userEmailField.addEventListener('input', function(e) {
-                    const input = e.target.value.toLowerCase();
-                    const suggestions = document.getElementById('emailSuggestions');
-                    
-                    if (!suggestions) return;
-                    
-                    if (input.length < 2) {
-                        suggestions.style.display = 'none';
-                        return;
-                    }
+            // Számla modal email mező
+            const invoiceEmailField = document.getElementById('userEmail');
+            if (invoiceEmailField) {
+                invoiceEmailField.addEventListener('input', handleEmailInput);
+            }
+            
+            // Szolgáltatás modal email mező
+            const serviceEmailField = document.querySelector('#newServiceModal #userEmail');
+            if (serviceEmailField) {
+                serviceEmailField.addEventListener('input', handleEmailInput);
+            }
+        }
+        //segédfüggvény:
+        function handleEmailInput(e) {
+            const input = e.target.value.toLowerCase();
+            const modal = e.target.closest('.custom-modal');
+            const suggestions = modal?.querySelector('.autocomplete-suggestions');
+            
+            if (!suggestions) return;
+            
+            if (input.length < 2) {
+                suggestions.style.display = 'none';
+                return;
+            }
         
-                    const matches = allUsers.filter(user => 
-                        user.email && user.email.toLowerCase().includes(input)
-                    );
+            const matches = allUsers.filter(user => 
+                user.email && user.email.toLowerCase().includes(input)
+            );
         
-                    if (matches.length === 0) {
-                        suggestions.style.display = 'none';
-                        return;
-                    }
+            if (matches.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
         
-                    suggestions.innerHTML = matches.map(user => 
-                        `<div class="autocomplete-suggestion" onclick="selectUser('${user.id}')">
-                            <strong>${user.email}</strong><br>
-                            <small class="text-muted">${user.companyName || 'Nincs cégnév'}</small>
-                        </div>`
-                    ).join('');
+            suggestions.innerHTML = matches.map(user => 
+                `<div class="autocomplete-suggestion" onclick="selectUser('${user.id}')">
+                    <strong>${user.email}</strong><br>
+                    <small class="text-muted">${user.companyName || 'Nincs cégnév'}</small>
+                </div>`
+            ).join('');
         
-                    suggestions.style.display = 'block';
+            suggestions.style.display = 'block';
         
-                    // Ha csak egy találat van, automatikusan kiválasztjuk
-                    if (matches.length === 1) {
-                        selectUser(matches[0].id);
-                    }
-                });
+            if (matches.length === 1) {
+                selectUser(matches[0].id);
             }
         }
         
@@ -2192,6 +2073,9 @@
                 if (e.target.id === 'newInvoiceModal') {
                     closeInvoiceModal();
                 }
+                if (e.target.id === 'newServiceModal') {
+                    closeServiceModal();
+                }
                 
                 // Autocomplete elrejtése
                 if (!e.target.closest('.autocomplete-container')) {
@@ -2206,8 +2090,11 @@
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
                     const modal = document.getElementById('newInvoiceModal');
-                    if (modal && modal.style.display === 'block') {
+                    const serviceModal = document.getElementById('newServiceModal');
+                    if (invoiceModal && invoiceModal.style.display === 'block') {
                         closeInvoiceModal();
+                    } else if (serviceModal && serviceModal.style.display === 'block') {
+                        closeServiceModal();
                     }
                 }
             });
@@ -2222,6 +2109,25 @@
                 if (imageInput) {
                     imageInput.addEventListener('change', handleImagePreview);
                 }
+            const serviceModal = document.getElementById('newServiceModal');
+            if (serviceModal) {
+                serviceModal.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        const customDiv = serviceModal.querySelector('#customServiceDiv');
+                        const customService = serviceModal.querySelector('#customService');
+                        
+                        if (customDiv && customService) {
+                            if (this.value === 'custom') {
+                                customDiv.style.display = 'block';
+                                customService.required = true;
+                            } else {
+                                customDiv.style.display = 'none';
+                                customService.required = false;
+                            }
+                        }
+                    });
+                });
+            }
         });
 
         // 1. Kép előnézet kezelő - add hozzá a többi függvényhez
@@ -2361,6 +2267,135 @@ function convertImageToBase64(file) {
         document.getElementById('viewInvoiceModal').style.display = 'none';
         document.body.style.overflow = 'auto';
     }
+
+        // Új sszolgáltatás modal megnyitása
+        async function newservice() {
+            await loadUsers();
+            setDefaultDueDate();
+            
+            const modal = document.getElementById('newServiceModal');
+            if (modal) {
+                modal.style.display = 'block';
+                // Body scroll letiltása
+                document.body.style.overflow = 'hidden';
+            } else {
+                console.error('newServiceModal elem nem található');
+            }
+        }
+        
+        // szolgáltatás Modal bezárása
+        function closeServiceModal() {
+            const modal = document.getElementById('newServiceModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+            document.body.style.overflow = 'auto';
+            resetServiceForm();
+            
+            selectedUser = null;
+            const userInfo = document.getElementById('selectedUserInfo');
+            if (userInfo) {
+                userInfo.style.display = 'none';
+            }
+        }
+        
+        function resetServiceForm() {
+            const form = document.getElementById('newServiceForm');
+            if (form) {
+                form.reset();
+            }
+            
+            selectedUser = null;
+            
+            const selectedUserInfo = document.getElementById('selectedUserInfo');
+            if (selectedUserInfo) {
+                selectedUserInfo.style.display = 'none';
+            }
+            
+            const selectedUserDetails = document.getElementById('selectedUserDetails');
+            if (selectedUserDetails) {
+                selectedUserDetails.innerHTML = '';
+            }
+            
+            const emailSuggestions = document.getElementById('emailSuggestions');
+            if (emailSuggestions) {
+                emailSuggestions.style.display = 'none';
+            }
+            
+            const customServiceDiv = document.getElementById('customServiceDiv');
+            if (customServiceDiv) {
+                customServiceDiv.style.display = 'none';
+            }
+        }
+
+        // szolgáltatás létrehozása:
+        async function createService() {
+            if (!selectedUser) {
+                alert('Kérjük válasszon ki egy felhasználót!');
+                return;
+            }
+        
+            const form = document.getElementById('newServiceForm');
+            if (!form || !form.checkValidity()) {
+                form?.reportValidity();
+                return;
+            }
+            
+            const serviceType = document.querySelector('input[name="serviceType"]:checked');
+            if (!serviceType) {
+                alert('Kérjük válasszon szolgáltatás típust!');
+                return;
+            }
+        
+            let name = serviceType.value;
+            if (serviceType.value === 'custom') {
+                const customServiceField = document.getElementById('customService');
+                if (customServiceField) {
+                    name = customServiceField.value;
+                    if (!name.trim()) {
+                        alert('Kérjük adja meg az egyéni szolgáltatás leírását!');
+                        return;
+                    }
+                }
+            }
+        
+            const amountField = document.getElementById('amount');
+            
+            const createButton = document.querySelector('button[onclick="createService()"]');
+            const originalText = createButton.innerHTML;
+            createButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Létrehozás...';
+            createButton.disabled = true;
+        
+            try {
+                const serviceData = {
+                    userId: selectedUser.id,
+                    userEmail: selectedUser.email,
+                    name: name,
+                    description: name,
+                    status: 'active',
+                    monthlyPrice: amountField ? parseInt(amountField.value) : 0,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+        
+                await db.collection('services').add(serviceData);
+                
+                closeServiceModal();
+                showNotification('Új szolgáltatás létrehozva!', 'success');
+                
+                if (typeof loadAllServices === 'function') {
+                    loadAllServices();
+                }
+                
+            } catch (error) {
+                console.error('Hiba a szolgáltatás létrehozásakor:', error);
+                showNotification('Hiba történt a szolgáltatás létrehozásakor', 'error');
+            } finally {
+                createButton.innerHTML = originalText;
+                createButton.disabled = false;
+            }
+        }
+        
         
         // Jegy műveletek
         async function replyToTicket(ticketId) {
