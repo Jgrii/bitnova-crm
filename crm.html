@@ -2404,12 +2404,13 @@ function convertImageToBase64(file) {
             if (serviceType.value === 'custom') {
                 const customServiceField = document.getElementById('customService');
                 if (customServiceField) {
-                    name = customServiceField;
-                } else {
-                    alert('Kérjük adja meg az egyéni szolgáltatás nevét!');
-                    return;
-                }
+                    name = customServiceField.value;
+                    if (!name.trim()) {
+                        alert('Kérjük adja meg az egyéni szolgáltatás nevét!');
+                        return;
+                    }
             }
+            
         
             const descriptionField = document.getElementById('serviceDescription');
             const description = descriptionField ? descriptionField.value : '';
