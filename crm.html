@@ -2398,15 +2398,15 @@ function convertImageToBase64(file) {
                 return;
             }
         
+            // Név meghatározása
             let name = serviceType.value;
             if (serviceType.value === 'custom') {
                 const customServiceField = document.getElementById('customService');
-                if (customServiceField) {
-                    name = customServiceField.value;
-                    if (!name.trim()) {
-                        alert('Kérjük adja meg az egyéni szolgáltatás nevét!');
-                        return;
-                    }
+                if (customServiceField && customServiceField.value.trim()) {
+                    name = customServiceField.value.trim();
+                } else {
+                    alert('Kérjük adja meg az egyéni szolgáltatás nevét!');
+                    return;
                 }
             }
         
