@@ -1857,27 +1857,22 @@
         }
         
         // szolgáltatás Modal bezárása
-        function closeInvoiceModal() {
+        function closeServiceModal() {
             const modal = document.getElementById('newServiceModal');
             if (modal) {
                 modal.style.display = 'none';
             }
-            // Body scroll visszaállítása
             document.body.style.overflow = 'auto';
-            resetForm();
+            resetServiceForm();
             
-            // Kiválasztott felhasználó törlése (ha van)
-            if (typeof selectedUser !== 'undefined') {
-                selectedUser = null;
-                const userInfo = document.getElementById('selectedUserInfo');
-                if (userInfo) {
-                    userInfo.style.display = 'none';
-                }
+            selectedUser = null;
+            const userInfo = document.getElementById('selectedUserInfo');
+            if (userInfo) {
+                userInfo.style.display = 'none';
             }
         }
         
-        // Form reset
-        function resetForm() {
+        function resetServiceForm() {
             const form = document.getElementById('newServiceForm');
             if (form) {
                 form.reset();
@@ -1903,6 +1898,74 @@
             const customServiceDiv = document.getElementById('customServiceDiv');
             if (customServiceDiv) {
                 customServiceDiv.style.display = 'none';
+            }
+        }
+
+        // szolgáltatás létrehozása:
+        async function createService() {
+            if (!selectedUser) {
+                alert('Kérjük válasszon ki egy felhasználót!');
+                return;
+            }
+        
+            const form = document.getElementById('newServiceForm');
+            if (!form || !form.checkValidity()) {
+                form?.reportValidity();
+                return;
+            }
+            
+            const serviceType = document.querySelector('input[name="serviceType"]:checked');
+            if (!serviceType) {
+                alert('Kérjük válasszon szolgáltatás típust!');
+                return;
+            }
+        
+            let name = serviceType.value;
+            if (serviceType.value === 'custom') {
+                const customServiceField = document.getElementById('customService');
+                if (customServiceField) {
+                    name = customServiceField.value;
+                    if (!name.trim()) {
+                        alert('Kérjük adja meg az egyéni szolgáltatás leírását!');
+                        return;
+                    }
+                }
+            }
+        
+            const amountField = document.getElementById('amount');
+            
+            const createButton = document.querySelector('button[onclick="createService()"]');
+            const originalText = createButton.innerHTML;
+            createButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Létrehozás...';
+            createButton.disabled = true;
+        
+            try {
+                const serviceData = {
+                    userId: selectedUser.id,
+                    userEmail: selectedUser.email,
+                    name: name,
+                    description: name,
+                    status: 'active',
+                    monthlyPrice: amountField ? parseInt(amountField.value) : 0,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                };
+        
+                await db.collection('services').add(serviceData);
+                
+                closeServiceModal();
+                showNotification('Új szolgáltatás létrehozva!', 'success');
+                
+                if (typeof loadAllServices === 'function') {
+                    loadAllServices();
+                }
+                
+            } catch (error) {
+                console.error('Hiba a szolgáltatás létrehozásakor:', error);
+                showNotification('Hiba történt a szolgáltatás létrehozásakor', 'error');
+            } finally {
+                createButton.innerHTML = originalText;
+                createButton.disabled = false;
             }
         }
         
