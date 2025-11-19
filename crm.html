@@ -766,7 +766,7 @@
                     </div>
 
                     <!-- Egyéni szolgáltatás leírás -->
-                    <div class="form-group" id="customServiceDiv">
+                    <div class="form-group" id="customServiceDivCreation">
                         <label for="customServiceName" class="form-label">Egyéni szolgáltatás leírása</label>
                         <input type="text" id="customServiceName" placeholder="Adja meg a szolgáltatás leírását">
                     </div>
@@ -776,7 +776,7 @@
                         <textarea id="serviceDescription" rows="3" placeholder="Írja le a szolgáltatás részleteit..." required></textarea>
                         <small class="text-muted">Ez a leírás fog megjelenni a szolgáltatás kártyán</small>
                     </div>
-                    <div class="form-group" id="customServiceDiv" style="display: none;">
+                    <div class="form-group" id="customServiceDivCreation" style="display: none;">
                         <label for="customServiceName" class="form-label">Egyéni szolgáltatás neve</label>
                         <input type="text" id="customServiceName" placeholder="Adja meg a szolgáltatás nevét">
                     </div> 
@@ -2370,7 +2370,7 @@ function convertImageToBase64(file) {
                 emailSuggestions.style.display = 'none';
             }
             
-            const customServiceDiv = document.getElementById('customServiceDiv');
+            const customServiceDiv = document.getElementById('customServiceDivCreation');
             if (customServiceDiv) {
                 customServiceDiv.style.display = 'none';
             }
@@ -2383,6 +2383,25 @@ function convertImageToBase64(file) {
 
         // szolgáltatás létrehozása:
         async function createService() {
+
+            document.querySelectorAll('input[name="serviceType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const customDiv = document.getElementById('customServiceDivCreation');
+                    const customService = document.getElementById('customServiceName');
+                    
+                    if (customDiv && customService) {
+                        if (this.value === 'custom') {
+                            customDiv.style.display = 'block';
+                            customService.required = true;
+                        } else {
+                            customDiv.style.display = 'none';
+                            customService.required = false;
+                        }
+                    }
+                });
+            });
+        }
+            
             if (!selectedUser) {
                 alert('Kérjük válasszon ki egy felhasználót!');
                 return;
@@ -2399,7 +2418,6 @@ function convertImageToBase64(file) {
                 alert('Kérjük válasszon szolgáltatás típust!');
                 return;
             }
-            initializeServiceTypeListeners()
         
             // Név meghatározása
             let name = serviceType.value;
