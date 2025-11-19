@@ -768,6 +768,16 @@
                         <label for="customService" class="form-label">Egyéni szolgáltatás leírása</label>
                         <input type="text" id="customService" placeholder="Adja meg a szolgáltatás leírását">
                     </div>
+
+                    <div class="form-group">
+                        <label for="serviceDescription" class="form-label">Szolgáltatás leírása *</label>
+                        <textarea id="serviceDescription" rows="3" placeholder="Írja le a szolgáltatás részleteit..." required></textarea>
+                        <small class="text-muted">Ez a leírás fog megjelenni a szolgáltatás kártyán</small>
+                    </div>
+                    <div class="form-group" id="customServiceDiv" style="display: none;">
+                        <label for="customService" class="form-label">Egyéni szolgáltatás neve</label>
+                        <input type="text" id="customService" placeholder="Adja meg a szolgáltatás nevét">
+                    </div>
                 </form>
             </div>
             <div class="custom-modal-footer">
@@ -2362,6 +2372,11 @@ function convertImageToBase64(file) {
             if (customServiceDiv) {
                 customServiceDiv.style.display = 'none';
             }
+
+            const descriptionField = document.getElementById('serviceDescription');
+            if (descriptionField) {
+                descriptionField.value = '';
+            }
         }
 
         // szolgáltatás létrehozása:
@@ -2377,7 +2392,7 @@ function convertImageToBase64(file) {
                 return;
             }
             
-            const serviceType = document.querySelector('input[name="serviceType"]:checked');
+            const serviceType = document.querySelector('#newServiceModal input[name="serviceType"]:checked');
             if (!serviceType) {
                 alert('Kérjük válasszon szolgáltatás típust!');
                 return;
@@ -2389,10 +2404,18 @@ function convertImageToBase64(file) {
                 if (customServiceField) {
                     name = customServiceField.value;
                     if (!name.trim()) {
-                        alert('Kérjük adja meg az egyéni szolgáltatás leírását!');
+                        alert('Kérjük adja meg az egyéni szolgáltatás nevét!');
                         return;
                     }
                 }
+            }
+        
+            const descriptionField = document.getElementById('serviceDescription');
+            const description = descriptionField ? descriptionField.value : '';
+            
+            if (!description.trim()) {
+                alert('Kérjük adja meg a szolgáltatás leírását!');
+                return;
             }
         
             const amountField = document.getElementById('amount');
@@ -2406,8 +2429,8 @@ function convertImageToBase64(file) {
                 const serviceData = {
                     userId: selectedUser.id,
                     userEmail: selectedUser.email,
-                    name: name,
-                    description: name,
+                    name: name,                    
+                    description: description,      
                     status: 'active',
                     monthlyPrice: amountField ? parseInt(amountField.value) : 0,
                     createdAt: new Date(),
